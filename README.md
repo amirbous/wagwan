@@ -1,8 +1,23 @@
 # Wagwan
 
+### Requirements: 
 
+compiler used 'g++', version 'c++17'
+
+further setup to be discussed
+### Usage, getting started:
+
+run make at root folder
+
+executable is in wagwan.out
+---
+
+### tree structure
+
+---
 
 ## Getting started
+
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
