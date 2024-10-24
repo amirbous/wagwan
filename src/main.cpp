@@ -8,6 +8,6 @@ int main() {
 	std::cout << "Welcome to Wagwan" << std::endl;
 	std::cout <<"This code runs fine" << std::endl;
 
-	Graph graph;
+    readGraph("resources/example.json");
 
 }
