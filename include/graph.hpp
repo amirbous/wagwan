@@ -2,9 +2,8 @@
 #define GRAPH_HPP
 
 #include <vector>
-#include <string>
 
-#include "IO.hpp"
+#include "../include/IO.hpp"
 #include <iostream>
 
 class Node{
@@ -28,7 +27,20 @@ class Node{
         }
 
         //getters and setters
+        int get_id()
+        {
+            return this->id;
+        }
 
+        int get_x()
+        {
+            return this->x;
+        }
+
+        int get_y()
+        {
+            return this->y;
+        }
 
 };
 
@@ -50,7 +62,25 @@ class Edge{
         };
 
     // getters and setters  
+    int get_source_id()
+    {
+        return this->source_id;
+    }
 
+    int get_target_id()
+    {
+        return this->target_id;
+    }
+
+    void set_source_id(int source_id)
+    {
+        this->source_id = source_id;
+    }
+
+    void set_target_id(int target_id)
+    {
+        this->target_id = target_id;
+    }
 };
 
 class Graph{
@@ -76,6 +106,25 @@ class Graph{
         };
 
         // getters and setters
+        std::vector<Node> get_nodes()
+        {
+            return this->nodes;
+        }
+
+        std::vector<Edge> get_edges()
+        {
+            return this->edges;
+        }
+
+        void set_nodes(std::vector<Node> nodes)
+        {
+            this->nodes = nodes;
+        }
+
+        void set_edges(std::vector<Edge> edges)
+        {
+            this->edges = edges;
+        }
 
         // other functions
         void getStats() {
