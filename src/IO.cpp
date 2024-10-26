@@ -9,6 +9,16 @@
 
 using json = nlohmann::json;
 
+
+/**
+ * @ref git@github.com:simdjson/simdjson.git
+ * Reads graph from file
+ * 
+ * reads .json file specified by the competition website and returns a graph
+ *
+ * @param filename: name of file to read graph from 
+ * @return graph instance specified in the file
+ */
 // important should be change just made placehoders to reduce compilation warnings
 Graph readGraph(std::string filename) {
     std::cout << "reading graph from file " << filename << std::endl;
@@ -34,7 +44,14 @@ Graph readGraph(std::string filename) {
         edges.push_back(current_edge);
     }
 
-    return {nodes, edges};
+    std::vector<Point> points;
+    // parse points
+    for (auto point: simdjson::ondemand::array(doc["points"]))
+    {
+        Point current_point((point["id"]).get_int64(), point["x"].get_int64(), point["y"].get_int64());
+        points.push_back(current_point);
+    }
+    return Graph(nodes, edges, points, Grid{});
 }
 
 bool writeGraph(std::string filename, Graph graph){
@@ -44,16 +61,16 @@ bool writeGraph(std::string filename, Graph graph){
 
     nlohmann::json json_graph;
 
-    std::vector<Node> nodes = graph.get_nodes();
-    std::vector<Edge> edges = graph.get_edges();
+    std::vector<Node> nodes = graph.getNodes();
+    std::vector<Edge> edges = graph.getEdges();
 
     // add nodes from the graph to the nodes array in the json
     for (auto node: nodes)
     {
       json_graph["nodes"].push_back({
-          {"id", node.get_id(),},
-          {"x", node.get_x()},
-          {"y", node.get_y()}
+          {"id", node.getId(),},
+          {"x", node.getX()},
+          {"y", node.getY()}
       });
     }
 
@@ -61,8 +78,8 @@ bool writeGraph(std::string filename, Graph graph){
     for (auto edge: edges)
     {
       json_graph["edges"].push_back({
-        {"from", edge.get_source_id()},
-        {"to", edge.get_target_id()}
+        {"from", edge.getSource_id()},
+        {"to", edge.getTarget_id()}
       });
     }
 
