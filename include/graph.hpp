@@ -8,20 +8,38 @@
 #include "../include/IO.hpp"
 #include "../include/vertex.hpp"
 
-class Vertex;
-
-class Node : public Vertex {
-    public:
-        using Vertex::Vertex;
+class Node{
     private:
+        int id;
+        int x;
+        int y;
+
+    public:
+        // constructors
+        Node (int id = -1, int x = -1, int y = -1) {
+            this->id = id;
+            this->x = x;
+            this->y = y;
+        }
+
+        //getters and setters
+        int getId()
+        {
+            return this->id;
+        }
+
+        int getX()
+        {
+            return this->x;
+        }
+
+        int getY()
+        {
+            return this->y;
+        }
 };
 
-class Point : public Vertex {
-    public:
-        using Vertex::Vertex;
-    private:
 
-};
 
 class Edge{
     private:
@@ -76,7 +94,6 @@ class Graph{
         //attributes, set of nodes and edges
         std::vector<Node> nodes;
         std::vector<Edge> edges;
-        std::vector<Point> points;
         Grid grid{};
     public:
         // constructors    
@@ -84,18 +101,16 @@ class Graph{
             //initialise with empty nodes and edges
             this->nodes = std::vector<Node>{};
             this->edges = std::vector<Edge>{};
-            this->points = std::vector<Point>{};
             this->grid = Grid{};
 
 
         };
-        Graph(std::vector<Node> nodes, std::vector<Edge> edges, std::vector<Point> points, Grid grid)
+        Graph(std::vector<Node> nodes, std::vector<Edge> edges, Grid grid)
         : grid{}
         
         {
             this->nodes = nodes;
             this->edges = edges;
-            this->points = points;
             this->grid = grid;  
         };
 
@@ -109,10 +124,7 @@ class Graph{
         {
             return this->edges;
         }
-        std::vector<Point> getPoints()
-        {
-            return this->points;
-        }
+
         Grid getGrid() 
         {
             return this->grid;
@@ -126,9 +138,7 @@ class Graph{
         {
             this->edges = edges;
         }
-        void setPoints(std::vector<Point> points) {
-            this->points = points;
-        }
+
 
         Node getNode(int id) {
             auto it = std::find_if(this->nodes.begin(), this->nodes.end(), [id](Node node){return id == node.getId();});

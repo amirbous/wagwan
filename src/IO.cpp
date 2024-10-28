@@ -9,6 +9,8 @@
 
 using json = nlohmann::json;
 
+class Node;
+class Graph;
 
 /**
  * @ref git@github.com:simdjson/simdjson.git
@@ -40,18 +42,11 @@ Graph readGraph(std::string filename) {
     // parse edges
     for (auto edge: simdjson::ondemand::array(doc["edges"]))
     {
-        Edge current_edge(edge["from"].get_int64(), edge["to"].get_int64());
+        Edge current_edge(edge["source"].get_int64(), edge["target"].get_int64());
         edges.push_back(current_edge);
     }
 
-    std::vector<Point> points;
-    // parse points
-    for (auto point: simdjson::ondemand::array(doc["points"]))
-    {
-        Point current_point((point["id"]).get_int64(), point["x"].get_int64(), point["y"].get_int64());
-        points.push_back(current_point);
-    }
-    return Graph(nodes, edges, points, Grid{});
+    return Graph(nodes, edges, Grid{});
 }
 
 bool writeGraph(std::string filename, Graph graph){
@@ -78,8 +73,8 @@ bool writeGraph(std::string filename, Graph graph){
     for (auto edge: edges)
     {
       json_graph["edges"].push_back({
-        {"from", edge.getSource_id()},
-        {"to", edge.getTarget_id()}
+        {"source", edge.getSource_id()},
+        {"target", edge.getTarget_id()}
       });
     }
 
