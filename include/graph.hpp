@@ -21,7 +21,8 @@ class Node{
             this->y = y;
         }
 
-        Node operator-(const Node& p) const { return Node(this->x - p.x, this->y - p.y); }
+        Node operator-(const Node& node) const 
+        { return {this->x - node.x, this->y - node.y}; }
 
         //getters and setters
         int getId()
@@ -37,6 +38,14 @@ class Node{
         int getY()
         {
             return this->y;
+        }
+        void setX(int x)
+        {
+            this->x = x;
+        }
+        void setY(int y) 
+        {
+            this->y = y;
         }
 };
 

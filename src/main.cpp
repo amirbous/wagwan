@@ -14,8 +14,16 @@ int main() {
 
     // TODO: verify output of this result manually or by writing some tests
     // TODO: add parameters
+    std::string result{};
+
+    if (edgesIntersect(example, example.getEdges()[0], example.getEdges()[1])) {
+        result = "true";
+    }
+    else {
+        result = "false";
+    }
     std::cout <<  "Checking intersection between edge 1 and edge 2 of the graph: " 
-        << (edgesIntersect(example, example.getEdges()[0], example.getEdges()[1]) ? "True" : "False")
+        << result
         << std::endl;
 
     writeGraph("output.json", example);
