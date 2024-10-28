@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include "../include/IO.hpp"
-#include "../include/vertex.hpp"
 
 class Node{
     private:
@@ -21,6 +20,8 @@ class Node{
             this->x = x;
             this->y = y;
         }
+
+        Node operator-(const Node& p) const { return Node(this->x - p.x, this->y - p.y); }
 
         //getters and setters
         int getId()

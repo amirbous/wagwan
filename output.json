@@ -1,4 +1,14 @@
 {
+    "edges": [
+        {
+            "source": 0,
+            "target": 1
+        },
+        {
+            "source": 3,
+            "target": 4
+        }
+    ],
     "nodes": [
         {
             "id": 0,
@@ -25,20 +35,5 @@
             "x": 2,
             "y": 1
         }
-
-
-    ],
-    "edges": [
-        {
-            "source": 0,
-            "target": 1
-        },
-        {
-            "source": 3,
-            "target": 4
-        }
-
-    ],
-    "width": 2,
-    "height": 2
+    ]
 }
