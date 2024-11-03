@@ -5,7 +5,7 @@ TARGET=wagwan.out
 SRC=./src
 SRCS=$(wildcard $(SRC)/*.cpp)
 all:
-	$(COMPILER) $(SRCS) $(FLAGS) -o $(TARGET)
+	$(COMPILER) $(SRCS) $(FLAGS) -o $(TARGET) --std=c++17
 
 clean:
 	rm $(TARGET)
