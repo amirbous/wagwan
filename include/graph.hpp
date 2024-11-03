@@ -1,9 +1,12 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include <vector>
-#include <algorithm>
 #include <iostream>
+#include <algorithm>
+#include <map>  
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include "../include/IO.hpp"
 
@@ -22,7 +25,9 @@ class Node{
         }
 
         Node operator-(const Node& node) const 
-        { return {this->x - node.x, this->y - node.y}; }
+        { 
+            // don't remove -1, compiler doesn't recognise instance
+            return {-1, this->x - node.x, this->y - node.y}; }
 
         //getters and setters
         int getId()
@@ -47,6 +52,10 @@ class Node{
         {
             this->y = y;
         }
+        void updateLocation (int x, int y) {
+            this->x = x;
+            this->y = y;
+        }
 };
 
 
@@ -67,14 +76,21 @@ class Edge{
             this->source_id = source_id;
             this->target_id = target_id;
         };
+        // ! Needed for map definition
+        bool operator<(const Edge& other) const {
+        if (this->source_id != other.source_id) {
+            return this->source_id < other.source_id;
+        }
+        return this->target_id < other.target_id;
+    }
 
     // getters and setters  
-        int getSource_id()
+        int getSource_id() const
         {
             return this->source_id;
         }
 
-        int getTarget_id()
+        int getTarget_id() const
         {
             return this->target_id;
         }
@@ -84,7 +100,7 @@ class Edge{
             this->source_id = source_id;
         }
 
-        void setTarget_id(int target_id)
+        void setTarget_id(int target_id) 
         {
             this->target_id = target_id;
         }
@@ -103,19 +119,19 @@ class Graph{
     private:
         //attributes, set of nodes and edges
         std::vector<Node> nodes;
-        std::vector<Edge> edges;
+        std::map<Edge, int> edges;
         Grid grid{};
     public:
         // constructors    
         Graph() {
             //initialise with empty nodes and edges
             this->nodes = std::vector<Node>{};
-            this->edges = std::vector<Edge>{};
+            this->edges = std::map<Edge, int>{};
             this->grid = Grid{};
 
 
         };
-        Graph(std::vector<Node> nodes, std::vector<Edge> edges, Grid grid)
+        Graph(std::vector<Node> nodes, std::map<Edge, int> edges, Grid grid)
         : grid{}
         
         {
@@ -130,7 +146,7 @@ class Graph{
             return this->nodes;
         }
 
-        std::vector<Edge> getEdges()
+        std::map<Edge, int> getEdges()
         {
             return this->edges;
         }
@@ -144,13 +160,14 @@ class Graph{
             this->nodes = nodes;
         }
 
-        void setEdges(std::vector<Edge> edges)
+        void setEdges(std::map<Edge, int> edges)
         {
             this->edges = edges;
         }
 
 
-        Node getNode(int id) {
+
+        Node& getNode(int id) {
             auto it = std::find_if(this->nodes.begin(), this->nodes.end(), [id](Node node){return id == node.getId();});
             if (it != nodes.end()) {
                 return *it;
@@ -161,14 +178,31 @@ class Graph{
                     exit(-1);
             }
         }
+        const Edge& getEdge(int source_id, int target_id) {
+            for (const auto& [edge, intersectionCount] : this->edges) {
+                if (edge.getSource_id() == source_id && edge.getTarget_id() == target_id) {
+                    return edge;  
+                }
+            }
+            std::cout << "Edge with source id " << source_id << " and target id " << target_id << " not found!" << std::endl;
+            exit(-1);
+        }
+        void UpdateNodeLocation(int id, int x, int y) {
+            Node& node = this->getNode(id);
+            node.setX(x);
+            node.setY(y);
+            
+        }
 
         // other functions
         void getStats() {
             std::cout << "The graph has " << nodes.size() <<
                 " nodes and " << edges.size() <<
-                "edges" << std::endl;
+                " edges" << std::endl;
 
         }
+
+        
 
 
 };

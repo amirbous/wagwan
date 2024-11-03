@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include <string>
 #include <fstream>
 #include "../include/json.hpp"
@@ -11,6 +12,7 @@ using json = nlohmann::json;
 
 class Node;
 class Graph;
+class Edge;
 
 /**
  * @ref git@github.com:simdjson/simdjson.git
@@ -38,14 +40,15 @@ Graph readGraph(std::string filename) {
         nodes.push_back(current_node);
     }
 
-    std::vector<Edge> edges;
+    //std::map<Edge, int> edges;
+    std::map<Edge, int> edges;
     // parse edges
     for (auto edge: simdjson::ondemand::array(doc["edges"]))
     {
         Edge current_edge(edge["source"].get_int64(), edge["target"].get_int64());
-        edges.push_back(current_edge);
+        edges.insert(std::make_pair(current_edge, 0));
+        
     }
-
     return Graph(nodes, edges, Grid{});
 }
 
@@ -57,7 +60,7 @@ bool writeGraph(std::string filename, Graph graph){
     nlohmann::json json_graph;
 
     std::vector<Node> nodes = graph.getNodes();
-    std::vector<Edge> edges = graph.getEdges();
+    std::map<Edge, int> edges = graph.getEdges();
 
     // add nodes from the graph to the nodes array in the json
     for (auto node: nodes)
@@ -70,7 +73,7 @@ bool writeGraph(std::string filename, Graph graph){
     }
 
     //add edges from the graph to the edges array in the json
-    for (auto edge: edges)
+    for (const auto& [edge, intersectionCount] : edges)
     {
       json_graph["edges"].push_back({
         {"source", edge.getSource_id()},

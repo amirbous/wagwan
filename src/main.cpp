@@ -14,17 +14,22 @@ int main() {
 
     // TODO: verify output of this result manually or by writing some tests
     // TODO: add parameters
-    std::string result{};
 
-    if (edgesIntersect(example, example.getEdges()[0], example.getEdges()[1])) {
-        result = "true";
+    // 
+    for (const auto &edge : example.getEdges()) {
+        const Edge graphEdge = edge.first;
+        for (const auto &inneredge : example.getEdges()) {
+            const Edge& graphInnerEdge = inneredge.first;
+            if (edgesIntersect(example, graphEdge, graphInnerEdge)) {
+                std::cout << "edge { (" << graphEdge.getSource_id() << ", " 
+                << graphEdge.getTarget_id() << ")"
+                << ", (" << graphInnerEdge.getSource_id() << ", " 
+                << graphInnerEdge.getTarget_id() << ") }" << std::endl;
+            }
+
+        }
     }
-    else {
-        result = "false";
-    }
-    std::cout <<  "Checking intersection between edge 1 and edge 2 of the graph: " 
-        << result
-        << std::endl;
+
 
     writeGraph("output.json", example);
 
