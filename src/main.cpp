@@ -16,7 +16,7 @@ int main() {
     // TODO: add parameters
 
     // 
-    for (const auto &edge : example.getEdges()) {
+    /*for (const auto &edge : example.getEdges()) {
         const Edge graphEdge = edge.first;
         for (const auto &inneredge : example.getEdges()) {
             const Edge& graphInnerEdge = inneredge.first;
@@ -28,8 +28,19 @@ int main() {
             }
 
         }
+    }*/
+    std::vector<std::pair<Edge,Edge>> intersections = findIntersections(example);
+    std::map<Edge,int> intersection_count;
+    for(std::pair<Edge,Edge> edges : intersections)
+    {
+        intersection_count[edges.first]++;
+        intersection_count[edges.second]++;
     }
 
+    for(auto count: intersection_count)
+    {
+        std::cout << "Edge from " << count.first.getSource_id() << " to " << count.first.getTarget_id() << " intersects a total of " << count.second << " times." << std::endl;
+    }
 
     writeGraph("output.json", example);
 
