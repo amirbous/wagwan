@@ -7,7 +7,6 @@
 #include <string>
 #include <tuple>
 #include <vector>
-
 #include "../include/IO.hpp"
 
 class Node{
@@ -137,7 +136,9 @@ class Graph{
         {
             this->nodes = nodes;
             this->edges = edges;
-            this->grid = grid;  
+            this->grid = grid;
+
+
         };
 
         // getters and setters
@@ -146,7 +147,7 @@ class Graph{
             return this->nodes;
         }
 
-        std::map<Edge, int> getEdges()
+        std::map<Edge, int>& getEdges()
         {
             return this->edges;
         }
@@ -164,48 +165,32 @@ class Graph{
         {
             this->edges = edges;
         }
-
-
-
         Node& getNode(int id) {
-            auto it = std::find_if(this->nodes.begin(), this->nodes.end(), [id](Node node){return id == node.getId();});
-            if (it != nodes.end()) {
-                return *it;
+        auto it = std::find_if(this->nodes.begin(), this->nodes.end(), [id](Node node){return id == node.getId();});
+        if (it != nodes.end()) {
+            return *it;
+        }
+        else {
+            std::cout << "No node with id " << id << " has been found!" << std::endl
+                << "aborting" << std::endl;
+                exit(-1);
+        }
+    }
+    const Edge& getEdge(int source_id, int target_id) {
+        for (const auto& [edge, intersectionCount] : this->edges) {
+            if (edge.getSource_id() == source_id && edge.getTarget_id() == target_id) {
+                return edge;  
             }
-            else {
-                std::cout << "No node with id " << id << " has been found!" << std::endl
-                    << "aborting" << std::endl;
-                    exit(-1);
-            }
         }
-        const Edge& getEdge(int source_id, int target_id) {
-            for (const auto& [edge, intersectionCount] : this->edges) {
-                if (edge.getSource_id() == source_id && edge.getTarget_id() == target_id) {
-                    return edge;  
-                }
-            }
-            std::cout << "Edge with source id " << source_id << " and target id " << target_id << " not found!" << std::endl;
-            exit(-1);
-        }
-        void UpdateNodeLocation(int id, int x, int y) {
-            Node& node = this->getNode(id);
-            node.setX(x);
-            node.setY(y);
-            
-        }
+        std::cout << "Edge with source id " << source_id << " and target id " << target_id << " not found!" << std::endl;
+        exit(-1);
+    }
 
-        // other functions
-        void getStats() {
-            std::cout << "The graph has " << nodes.size() <<
-                " nodes and " << edges.size() <<
-                " edges" << std::endl;
+        void UpdateNodeLocation(int id, int x, int y);
+        float getEdgeLength(const Edge &edge);
+        const Edge& getHighestIntersection();
 
-        }
-
-        
-
-
-};
+    };
 
 
 #endif

@@ -49,14 +49,12 @@ Graph readGraph(std::string filename) {
         edges.insert(std::make_pair(current_edge, 0));
         
     }
-    return Graph(nodes, edges, Grid{});
+    return {nodes, edges, Grid{}};
 }
 
 bool writeGraph(std::string filename, Graph graph){
 
     std::cout << "writing graph to file " << filename << std::endl;  
-    graph.getStats();
-
     nlohmann::json json_graph;
 
     std::vector<Node> nodes = graph.getNodes();

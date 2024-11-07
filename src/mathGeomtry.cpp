@@ -1,7 +1,7 @@
 #include "../include/mathGeometry.hpp"
+#include "../include/graph.hpp"
+#include <cmath>
 
-class Node;
-class Graph;
 
 int dot(VectorGeometry v1, VectorGeometry v2){
 
@@ -10,4 +10,7 @@ int dot(VectorGeometry v1, VectorGeometry v2){
 int wedge(VectorGeometry v1, VectorGeometry v2){
     return v1.x*v2.y - v1.y*v2.x;
 
+}
+float getNorm(VectorGeometry v) {
+    return sqrt(v.x * v.x + v.y * v.y);
 }

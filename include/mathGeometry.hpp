@@ -1,9 +1,10 @@
-#ifndef MATH_HPP
-#define MATH_HPP
+#ifndef MATHGOEMETRY_HPP
+#define MATHGEOMTRY_HPP
 
-#include "graph.hpp"
+#include "../include/graph.hpp"
 
 class Node;
+class Edge;
 class Graph;
 
 
@@ -12,12 +13,16 @@ struct VectorGeometry {
         x = 0;
         y = 0;
     }
-    VectorGeometry(Node n1, Node n2) {
-        Node diffNode = (n1 - n2);
-        x = diffNode.getX();
-        y = diffNode.getY();
+    VectorGeometry(Node& n1, Node& n2) {
+          
+        x = n2.getX() - n1.getX();
+        y = n2.getY() - n1.getY();
 
     }
+    VectorGeometry(int x, int y) {
+        this->x = x;
+        this->y = y;
+    } 
     int x;
     int y;
     bool isNull() {
@@ -31,6 +36,7 @@ struct VectorGeometry {
 int dot(VectorGeometry v1, VectorGeometry v2);
 int wedge(VectorGeometry v1, VectorGeometry v2);
 
+float getNorm(VectorGeometry v);
 
 
 #endif
