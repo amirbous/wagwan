@@ -110,6 +110,10 @@ struct Grid {
         width = 0;
         height = 0;
     }
+    Grid(int width, int height) {
+        this->width = width;
+        this->height = height;
+    }
     int width;
     int height;
 };

@@ -33,6 +33,7 @@ Graph readGraph(std::string filename) {
     simdjson::ondemand::document doc = parser.iterate(json);
 
     std::vector<Node> nodes;
+    int height = 0, width = 0;
     // parse nodes
     for (auto node: doc["nodes"])
     {
@@ -49,7 +50,9 @@ Graph readGraph(std::string filename) {
         edges.insert(std::make_pair(current_edge, 0));
         
     }
-    return {nodes, edges, Grid{}};
+    height = doc["height"].get_int64();
+    width = doc["width"].get_int64();
+    return {nodes, edges, {height, width}};
 }
 
 bool writeGraph(std::string filename, Graph graph){
@@ -78,6 +81,12 @@ bool writeGraph(std::string filename, Graph graph){
         {"target", edge.getTarget_id()}
       });
     }
+    Edge worstEdge = graph.getHighestIntersection();
+    json_graph["worst_edge"].push_back({
+      {"source", worstEdge.getSource_id()},
+      {"target", worstEdge.getTarget_id()},
+      {"intersecting", graph.getEdges()[worstEdge]}
+    });
 
     // copy the json object into th file
     std::ofstream file(filename);
