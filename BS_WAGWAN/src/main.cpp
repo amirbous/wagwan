@@ -14,7 +14,13 @@ using namespace ogdf;
 
 int main(int argc, char** argv)
 {
+
+    if (argc < 3) {
+        std::cout << "requires 2 arguments: \n input file \n output file" << std::endl;
+        exit(-1);
+    }
     const std::string fileName = argv[1];
+    const std::string outFile = argv[2];
 
 	Graph G;
 
@@ -69,7 +75,7 @@ int main(int argc, char** argv)
 
     }
 
-    writeGraphToWagwan(G, GA, "output.json", nodesId, width, height, e_max);
+    writeGraphToWagwan(G, GA, outFile, nodesId, width, height, e_max);
 
 
 

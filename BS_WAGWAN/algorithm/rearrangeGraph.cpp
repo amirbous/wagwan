@@ -63,7 +63,7 @@ void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA) {
                 break;
             }
         }
-
+    // TODO: biggr search radius
 
 
     }
