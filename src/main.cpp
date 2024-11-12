@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     std::cout << std::endl;
     FMMMLayout layout;
     layout.useHighLevelOptions(true);
-    layout.unitEdgeLength(50.0);  // Set the desired edge length
+    layout.unitEdgeLength(width / 50.0);  // Set the desired edge length
     layout.qualityVersusSpeed(FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
     layout.call(GA);  
 
@@ -67,15 +67,15 @@ int main(int argc, char** argv)
     
     int max_intersect = 0;
     ogdf::edge e_max{};
-    for (const auto& pair : intersectionCount) {
+    /*for (const auto& pair : intersectionCount) {
         if (pair.second > max_intersect) {
             max_intersect = pair.second;
             e_max = pair.first;
         }
 
-    }
-
-    writeGraphToWagwan(G, GA, outFile, nodesId, width, height, e_max);
+    }*/
+    std::cout << max_intersect;
+    writeGraphToJson(G, GA, outFile, nodesId, width, height);
 
 
 
