@@ -26,7 +26,6 @@ int main(int argc, char** argv)
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
 
-    adjustCoordinatesToGrid(G, GA, static_cast<float>(width), static_cast<float>(height));
 
 
 
@@ -39,6 +38,9 @@ int main(int argc, char** argv)
     layout.call(GA);  
 
 
+
+
+    adjustCoordinatesToGrid(G, GA, static_cast<double>(width), static_cast<double>(height));
     rearrangeToIntGraph(G, GA);
     std::vector<std::pair<edge, edge>> intersections = findIntersections(G, GA);
 
