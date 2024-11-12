@@ -1,0 +1,266 @@
+{
+    "edges": [
+        {
+            "source": 8,
+            "target": 2
+        },
+        {
+            "source": 8,
+            "target": 14
+        },
+        {
+            "source": 15,
+            "target": 10
+        },
+        {
+            "source": 14,
+            "target": 12
+        },
+        {
+            "source": 15,
+            "target": 4
+        },
+        {
+            "source": 6,
+            "target": 10
+        },
+        {
+            "source": 15,
+            "target": 6
+        },
+        {
+            "source": 14,
+            "target": 2
+        },
+        {
+            "source": 6,
+            "target": 0
+        },
+        {
+            "source": 2,
+            "target": 9
+        },
+        {
+            "source": 3,
+            "target": 11
+        },
+        {
+            "source": 13,
+            "target": 5
+        },
+        {
+            "source": 2,
+            "target": 15
+        },
+        {
+            "source": 13,
+            "target": 9
+        },
+        {
+            "source": 8,
+            "target": 15
+        },
+        {
+            "source": 15,
+            "target": 3
+        },
+        {
+            "source": 12,
+            "target": 2
+        },
+        {
+            "source": 7,
+            "target": 15
+        },
+        {
+            "source": 10,
+            "target": 3
+        },
+        {
+            "source": 15,
+            "target": 0
+        },
+        {
+            "source": 7,
+            "target": 5
+        },
+        {
+            "source": 13,
+            "target": 1
+        },
+        {
+            "source": 1,
+            "target": 8
+        },
+        {
+            "source": 13,
+            "target": 4
+        },
+        {
+            "source": 15,
+            "target": 5
+        },
+        {
+            "source": 9,
+            "target": 7
+        },
+        {
+            "source": 13,
+            "target": 7
+        },
+        {
+            "source": 4,
+            "target": 6
+        },
+        {
+            "source": 15,
+            "target": 11
+        },
+        {
+            "source": 9,
+            "target": 15
+        },
+        {
+            "source": 10,
+            "target": 5
+        },
+        {
+            "source": 8,
+            "target": 11
+        },
+        {
+            "source": 14,
+            "target": 3
+        },
+        {
+            "source": 0,
+            "target": 3
+        },
+        {
+            "source": 12,
+            "target": 9
+        },
+        {
+            "source": 4,
+            "target": 0
+        },
+        {
+            "source": 1,
+            "target": 14
+        },
+        {
+            "source": 1,
+            "target": 12
+        },
+        {
+            "source": 1,
+            "target": 9
+        },
+        {
+            "source": 7,
+            "target": 6
+        },
+        {
+            "source": 15,
+            "target": 11
+        },
+        {
+            "source": 11,
+            "target": 5
+        },
+        {
+            "source": 0,
+            "target": 10
+        }
+    ],
+    "height": 200,
+    "nodes": [
+        {
+            "id": 0,
+            "x": 73,
+            "y": 53
+        },
+        {
+            "id": 1,
+            "x": 145,
+            "y": 150
+        },
+        {
+            "id": 2,
+            "x": 146,
+            "y": 135
+        },
+        {
+            "id": 3,
+            "x": 146,
+            "y": 60
+        },
+        {
+            "id": 4,
+            "x": 20,
+            "y": 103
+        },
+        {
+            "id": 5,
+            "x": 46,
+            "y": 69
+        },
+        {
+            "id": 6,
+            "x": 23,
+            "y": 58
+        },
+        {
+            "id": 7,
+            "x": 31,
+            "y": 132
+        },
+        {
+            "id": 8,
+            "x": 157,
+            "y": 81
+        },
+        {
+            "id": 9,
+            "x": 97,
+            "y": 173
+        },
+        {
+            "id": 10,
+            "x": 84,
+            "y": 20
+        },
+        {
+            "id": 11,
+            "x": 107,
+            "y": 30
+        },
+        {
+            "id": 12,
+            "x": 174,
+            "y": 190
+        },
+        {
+            "id": 13,
+            "x": 75,
+            "y": 134
+        },
+        {
+            "id": 14,
+            "x": 199,
+            "y": 120
+        },
+        {
+            "id": 15,
+            "x": 89,
+            "y": 96
+        }
+    ],
+    "width": 200,
+    "worst_edge": [
+        {
+            "source": 4,
+            "target": 0
+        }
+    ]
+}
