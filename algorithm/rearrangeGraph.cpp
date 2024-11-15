@@ -3,69 +3,116 @@
 #include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/basic/GraphAttributes.h>
 
-#include<set>
+#include <set>
+#include <utility>
+
 #include <cmath>
+
+#include <algorithm>
 
 #include "../include/algorithm/rearrangeGraph.hpp"
 
+bool OnGridWithRadius (std::pair<int, int> position, int radius, int gridWidth, int gridHeight) {
+
+    return position.first - radius >= 0 || position.first + radius <= gridWidth
+        || position.second - radius >= 0 || position.second + radius <= gridHeight;
+}
+
+bool PositionOnGrid (std::pair<int, int> position, int gridWidth, int gridHeight) {
+    return position.first > 0 && position.first <= gridWidth
+        && position.second > 0 && position.second <= gridHeight; 
+}
+
+std::vector<std::pair<int, int>> generateFramePositions(int xDown, int yDown, int lookup_radius) {
+
+    std::vector<std::pair<int, int>> frame;
+
+    int sideLength = lookup_radius*2 + 2;
+    std::vector<int> rangeX(sideLength);
+    std::iota(rangeX.begin(), rangeX.end(), xDown); 
+    
+    std::vector<int> rangeY(sideLength);
+    std::iota(rangeY.begin(), rangeY.end(), yDown);
+
+    for (int i = xDown; i < xDown + sideLength; i++) {
+        if (i == xDown || i == xDown + sideLength - 1) {
+            for (int j = yDown; j < yDown + sideLength; j++) {
+                frame.push_back(std::pair<int, int>{i, j});
+            }
+        }
+        else {
+            frame.push_back(std::pair<int, int>{i, yDown});
+            frame.push_back(std::pair<int, int>{i, yDown + sideLength - 1});
+        }
+
+    }
+    return frame;
 
 
-void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, double gridWidth, double gridHeight) {
+}
+
+void EmplaceWithinLookup(ogdf::Graph &G, ogdf::GraphAttributes &GA,
+                        ogdf::node u, std::set<std::pair<int, int>>& populatedPositions,
+                        double gridWidth, double gridHeight) {
+
+
+    double x = GA.x(u);
+    double y = GA.y(u);
+
+    auto rng = std::default_random_engine {};
+    int lookup_radius = 0;
+    int xDown = static_cast<int>(std::floor(x - lookup_radius)), yDown = static_cast<int>(std::floor(y - lookup_radius));
+    bool stillOnGrid = OnGridWithRadius(std::pair<int, int>{x, y}, lookup_radius, gridWidth, gridHeight);
+    while (stillOnGrid) {
+       
+        int xDown = static_cast<int>(std::floor(x - lookup_radius));
+        int yDown = static_cast<int>(std::floor(y - lookup_radius));
+        
+       std::vector<std::pair<int, int>> candidates = generateFramePositions(xDown, yDown, lookup_radius);
+       std::shuffle(candidates.begin(), candidates.end(), rng);
+        for (const auto& pos : candidates) {
+            if (populatedPositions.find(pos) == populatedPositions.end() && 
+                    PositionOnGrid(pos, gridWidth, gridHeight)) {
+
+                GA.x(u) = static_cast<double>(pos.first);
+                GA.y(u) = static_cast<double>(pos.second);
+                populatedPositions.insert(std::pair<int, int>{pos});
+                return;
+            }
+        }
+        
+        lookup_radius++;
+        stillOnGrid = OnGridWithRadius(std::pair<int, int>{x, y}, lookup_radius, gridWidth, gridHeight);
+    }
+
+}
+
+void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
+                            std::set<std::pair<int, int>>& populatedPositions, 
+                            double gridWidth, double gridHeight) {
+
     for (ogdf::node u : G.nodes) {
+        std::cout << u->index();
         double x = GA.x(u);
         double y = GA.y(u);
 
-        x = std::max(0.0, std::min(x, gridWidth));
-        y = std::max(0.0, std::min(y, gridHeight));
+        GA.x(u) = std::min(x, gridWidth);
+        GA.y(u) = std::min(y, gridHeight);
 
-        GA.x(u) = x;
-        GA.y(u) = y;
+        EmplaceWithinLookup(G, GA, u, populatedPositions, gridWidth, gridHeight);
+
     }
 }
 
-void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA) {
+void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
+    std::set<std::pair<int, int>> occupiedPositions, double gridWidth, double gridHeight) {
 
     std::set<std::pair<int, int>> occupiedPosition;
+
     for (ogdf::node u: G.nodes) {
 
-        bool inserted = false;
-
-        float x = GA.x(u);
-        float y = GA.y(u);
-
-        bool xIsInt = x == floor(x);
-        bool yIsInt = y == floor(y);
-
-        if (xIsInt && yIsInt) {
-            occupiedPosition.insert({static_cast<int>(x), static_cast<int>(y)});
-            inserted = true;
-        }
-
-        int xDown = static_cast<int>(std::floor(x));
-        int xUp = static_cast<int>(std::ceil(x));
-        int yDown = static_cast<int>(std::floor(y));
-        int yUp = static_cast<int>(std::ceil(y));
-
-        std::vector<std::pair<int, int>> candidates = {
-        {xDown, yDown},
-        {xDown, yUp},
-        {xUp, yDown},
-        {xUp, yUp}
-        };
-
-        for (const auto &[newX, newY] : candidates) {
-            if (!occupiedPosition.count({newX, newY})) {
-                // Set node position and mark it as occupied
-                GA.x(u) = static_cast<float>(newX);
-                GA.y(u) = static_cast<float>(newY);
-                occupiedPosition.insert({newX, newY});
-                inserted = true;
-                break;
-            }
-        }
-    // TODO: biggr search radius
-
-
+        EmplaceWithinLookup(G, GA, u, occupiedPosition, gridWidth, gridHeight);
+ 
     }
 
 }

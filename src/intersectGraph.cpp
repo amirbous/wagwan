@@ -22,33 +22,44 @@ float getNorm(VectorGeometry v) {
     return sqrt(dot(v, v));
 }
 
-bool clockwiseOrientation(ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c) {
+int orientation(const ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c) {
+    int val = (GA.y(c) - GA.y(a)) * (GA.x(b) - GA.x(a)) -
+              (GA.y(b) - GA.y(a)) * (GA.x(c) - GA.x(a));
 
-    return (GA.y(c)-GA.y(a))*(GA.x(b)-GA.x(a)) > (GA.y(b)-GA.y(a))*(GA.x(c)-GA.x(a));
-
+    if (val == 0) return 0;
+    return (val > 0) ? 1 : 2; 
 }
-bool isSegmentBetween(ogdf::GraphAttributes GA, ogdf::node a,ogdf::node b,ogdf::node c) {
-    VectorGeometry v1 = VectorGeometry(GA, a, b);
-    VectorGeometry v2 = VectorGeometry(GA, b, c);
 
-    return wedge(v1, v2) == 0 && dot(v1, v2) > 0;
+bool onSegment(const ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c) {
+    return std::min(GA.x(a), GA.x(b)) <= GA.x(c) && GA.x(c) <= std::max(GA.x(a), GA.x(b)) &&
+           std::min(GA.y(a), GA.y(b)) <= GA.y(c) && GA.y(c) <= std::max(GA.y(a), GA.y(b));
 }
+
 bool edgesIntersect(ogdf::GraphAttributes GA, ogdf::edge e1, ogdf::edge e2) {
-    bool nonParallelIntersect = false;
     ogdf::node a = e1->source();
     ogdf::node b = e1->target();
-        
     ogdf::node c = e2->source();
     ogdf::node d = e2->target();
 
-        
-    nonParallelIntersect = clockwiseOrientation(GA, a,c,d) != clockwiseOrientation(GA, b,c,d) && clockwiseOrientation(GA, a,b,c) != clockwiseOrientation(GA, a,b,d);
+    // Big missing section ==> if shared node
+    if (a == c || a == d || b == c || b == d) {
+        return false; 
+    }
 
 
-    return nonParallelIntersect;// general case intersection 
-        //|| isSegmentBetween(GA, a, b, d) || isSegmentBetween(GA, c, d, a); // Overlapping parallel segments
-}
+    int o1 = orientation(GA, a, b, c);
+    int o2 = orientation(GA, a, b, d);
+    int o3 = orientation(GA, c, d, a);
+    int o4 = orientation(GA, c, d, b);
 
-void rearrangeIntGraph(ogdf::GraphAttributes GA) {
-    return;
+  
+    if (o1 != o2 && o3 != o4) return true;
+
+
+    if (o1 == 0 && onSegment(GA, a, b, c)) return true;
+    if (o2 == 0 && onSegment(GA, a, b, d)) return true;
+    if (o3 == 0 && onSegment(GA, c, d, a)) return true;
+    if (o4 == 0 && onSegment(GA, c, d, b)) return true;
+
+    return false;
 }

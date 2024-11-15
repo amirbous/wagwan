@@ -8,6 +8,8 @@ TARGET=wagwan.out
 ALGORITHM=$(wildcard algorithm/*.cpp)
 SRC=./src
 SRCS=$(wildcard $(SRC)/*.cpp)
+
+
 all:
 	$(COMPILER) $(SRCS) $(ALGORITHM) $(INCLUDE_FLAG) $(INCLUDE_LIB) --std=$(VERSION) -lOGDF -lCOIN -o $(TARGET)
 

@@ -25,7 +25,6 @@ void initializeGraphFromJson(Graph &G, GraphAttributes &GA, const std::string &f
     simdjson::padded_string json = simdjson::padded_string::load(filePath);
     simdjson::ondemand::document doc = parser.iterate(json);
 
-    std::cout << "File " << filePath << " has been loaded succesfully!" << std::endl;
 
     // Map to store node IDs and their corresponding node references in OGDF
     std::unordered_map<int, node> nodeMap;
@@ -46,6 +45,8 @@ void initializeGraphFromJson(Graph &G, GraphAttributes &GA, const std::string &f
         GA.height(u) = 10;
         GA.width(u) = 10;
 
+
+
     }
 
     // Add edges to the graph based on source and target IDs
@@ -62,6 +63,9 @@ void initializeGraphFromJson(Graph &G, GraphAttributes &GA, const std::string &f
 
     width = doc["width"].get_int64();
     height = doc["height"].get_int64();
+
+    std::cout << "File " << filePath << " has been loaded succesfully!" << std::endl;
+
 
 }
 

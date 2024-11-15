@@ -38,12 +38,9 @@ int getSign(int x);
 int dot(VectorGeometry v1, VectorGeometry v2);
 int wedge(VectorGeometry v1, VectorGeometry v2);
 float getNorm(VectorGeometry v);
-bool clockwiseOrientation(ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c);
-bool isSegmentBetween(ogdf::GraphAttributes GA, ogdf::node a,ogdf::node b,ogdf::node c);
-bool edgesIntersect(ogdf::GraphAttributes GA, ogdf::edge e1, ogdf::edge e2);
-void rearrangeIntGraph(ogdf::GraphAttributes GA);
-//void updateOverallIntersectionCount(ogdf::Graph g);
-
+int orientation(ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c); 
+bool onSegment(ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c);
+bool edgesIntersect(ogdf::GraphAttributes GA, ogdf::edge e1, ogdf::edge e2) ;
 
 
 
