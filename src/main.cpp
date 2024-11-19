@@ -37,34 +37,15 @@ int main(int argc, char** argv)
 
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
-    simulated_annealing(G,GA,nodesId,1,1);
+    //simulated_annealing(G,GA,nodesId,1,1);
+
+    std::cout<<calculate_singular_intersections(findIntersections(G,GA))[0].first<<std::endl;
 
     writeGraphToJson(G,GA,outFile,nodesId,height,width);
 
-    double dwidth = static_cast<double>(width), dheight = static_cast<double>(height);
-
-   /* std::vector<std::pair<edge, edge>> intersections = findIntersections(G, GA);
 
 
-
-    std::map<edge, int>  intersectionCount;
-
-    int max_intersect = 0;
-    ogdf::edge e_max{};
-    
-    for(std::pair<edge,edge> edges : intersections)
-    {
-        intersectionCount[edges.first]++;
-        intersectionCount[edges.second]++;
-    }
-    for (const auto& pair : intersectionCount) {
-        std::cout << pair.second << "\n";
-
-    }*/
-
-
-
-    std::set<std::pair<int, int>> occupiedPositions{};
+    /*std::set<std::pair<int, int>> occupiedPositions{};
 
 
     std::cout << std::endl;
@@ -81,7 +62,7 @@ int main(int argc, char** argv)
 
 
  //   std::cout << max_intersect;
-    writeGraphToJson(G, GA, outFile, nodesId, width, height);
+    writeGraphToJson(G, GA, outFile, nodesId, width, height);*/
 
 
 

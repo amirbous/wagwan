@@ -45,7 +45,6 @@ std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Gra
     std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections;
 
     for (const auto &event : events) {
-        std::cout << "events are exploding";
         ogdf::edge edge = event.edge;
 
         if (event.isStart) {
@@ -81,6 +80,6 @@ std::vector<std::pair<int, ogdf::edge>> calculate_singular_intersections(const s
         intersections.emplace_back(pair.second, pair.first);
     }
 
-    std::sort(intersections.begin(), intersections.end());
+    std::sort(intersections.rbegin(), intersections.rend());
     return intersections;
 }
