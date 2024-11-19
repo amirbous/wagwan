@@ -12,6 +12,8 @@
 #include <map>
 #include <set>
 
+#include "../include/algorithm/simulated_annealing.hpp"
+
 using namespace ogdf;
 
 int main(int argc, char** argv)
@@ -34,6 +36,10 @@ int main(int argc, char** argv)
     int height, width;
 
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
+
+    simulated_annealing(G,GA,nodesId,1,1);
+
+    writeGraphToJson(G,GA,outFile,nodesId,height,width);
 
     double dwidth = static_cast<double>(width), dheight = static_cast<double>(height);
 
