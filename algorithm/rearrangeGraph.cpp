@@ -116,3 +116,44 @@ void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA,
     }
 
 }
+
+    
+void centerInGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
+                  std::set<std::pair<int, int>>& populatedPositions, 
+                  double gridWidth, double gridHeight) {
+
+    // Step 1: Calculate center of mass
+    double sumX = 0, sumY = 0;
+    int nodeCount = 0;
+
+    for (ogdf::node u : G.nodes) {
+        sumX += GA.x(u);
+        sumY += GA.y(u);
+        nodeCount++;
+    }
+
+    if (nodeCount == 0) return; // No nodes to center
+
+    double centerX = sumX / nodeCount;
+    double centerY = sumY / nodeCount;
+
+    // Step 2: Determine grid center
+    double gridCenterX = gridWidth / 2.0;
+    double gridCenterY = gridHeight / 2.0;
+
+    // Step 3: Calculate the difference
+    double offsetX = gridCenterX - centerX;
+    double offsetY = gridCenterY - centerY;
+
+    // Step 4: Shift and validate positions
+    for (ogdf::node u : G.nodes) {
+        double newX = GA.x(u) + offsetX;
+        double newY = GA.y(u) + offsetY;
+
+        // Use EmplaceWithinLookup to ensure the position is valid
+        GA.x(u) = newX;
+        GA.y(u) = newY;
+
+        EmplaceWithinLookup(G, GA, u, populatedPositions, gridWidth, gridHeight);
+    }
+}

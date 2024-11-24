@@ -11,5 +11,7 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
     std::set<std::pair<int, int>>& populatedPositions, double gridWidth, double gridHeight);
 void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
     std::set<std::pair<int, int>> occupiedPositions, double gridWidth, double gridHeight); 
+void centerInGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
+    std::set<std::pair<int, int>>& populatedPositions, double gridWidth, double gridHeight);
 
 #endif
