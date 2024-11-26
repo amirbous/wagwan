@@ -38,31 +38,47 @@ int main(int argc, char** argv)
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
     //simulated_annealing(G,GA,nodesId,1,1);
+    
+  /*  auto start_intersect_before = std::chrono::high_resolution_clock::now();
+    std::vector<std::pair<int, ogdf::edge>> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
+    auto end_intersect_before = std::chrono::high_resolution_clock::now();
 
-    std::cout<<calculate_singular_intersections(findIntersections(G,GA))[0].first<<std::endl;
+    int max_intersect_before = 0;
+    for (auto p : intersectionCountBefore){
+        if (p.first > max_intersect_before) max_intersect_before = p.first; 
+    }
+    std::cout <<fileName << std::endl;
+    std::cout << "before: " << max_intersect_before <<std::endl;*/
 
-    writeGraphToJson(G,GA,outFile,nodesId,height,width);
 
+    std::set<std::pair<int, int>> occupiedPositions{};
 
+    auto start_preprocess = std::chrono::high_resolution_clock::now();
 
-    /*std::set<std::pair<int, int>> occupiedPositions{};
-
-
-    std::cout << std::endl;
     FMMMLayout layout;
     layout.useHighLevelOptions(true);
-    layout.unitEdgeLength(width / 100.0); 
+    layout.unitEdgeLength(width / 50.0); 
     layout.qualityVersusSpeed(FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
     layout.call(GA);  
 
-
-
-
     adjustCoordinatesToGrid(G, GA, occupiedPositions, static_cast<double>(width), static_cast<double>(height));
 
+    auto end_preprocess = std::chrono::high_resolution_clock::now();
 
+    std::vector<std::pair<int, ogdf::edge>> intersectionCountAfter = calculate_singular_intersections(findIntersections(G,GA));
+    int max_intersect_after = 0;
+    for (auto p : intersectionCountAfter){
+        if (p.first > max_intersect_after) max_intersect_after = p.first; 
+    }
+
+    auto end_intersect_after =  std::chrono::high_resolution_clock::now();
+    std::cout << "After: " <<  max_intersect_after <<std::endl;
+
+  //  std::cout << "Time to evaluate intersections before: " <<  std::chrono::duration_cast<std::chrono::microseconds>(end_intersect_before - start_intersect_before).count() << "ms" <<std::endl;
+    std::cout << "Time to preprocess: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_preprocess - start_preprocess).count() << "ms" << std::endl;
+    std::cout << "Time to evaluate intersections before: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_intersect_after - end_preprocess).count() << "ms" << std::endl;
  //   std::cout << max_intersect;
-    writeGraphToJson(G, GA, outFile, nodesId, width, height);*/
+    writeGraphToJson(G, GA, outFile, nodesId, width, height);
 
 
 

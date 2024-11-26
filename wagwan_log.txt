@@ -1,0 +1,21 @@
+#wagwan test
+
+resources/competitino2024/graph10.json
+
+After: 17
+Time to preprocess: 455ms
+Time to evaluate intersections before: 6196423ms
+
+resources/competitino2024/graph1.json
+
+After: 5
+Time to preprocess: 0ms
+Time to evaluate intersections before: 2ms
+resources/competitino2024/graph15.json
+
+After: 81
+
+Time to preprocess: 200ms
+Time to evaluate intersections before: 526625ms
+
+resources/competitino2024/graph8.json

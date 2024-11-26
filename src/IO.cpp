@@ -64,7 +64,6 @@ void initializeGraphFromJson(Graph &G, GraphAttributes &GA, const std::string &f
     width = doc["width"].get_int64();
     height = doc["height"].get_int64();
 
-    std::cout << "File " << filePath << " has been loaded succesfully!" << std::endl;
 
 
 }
@@ -97,7 +96,6 @@ void writeGraphToJson(Graph &G, GraphAttributes &GA, const std::string &filePath
     outFile << graphJson.dump(4);  
     outFile.close();
 
-    std::cout << "Graph written to " << filePath << " successfully!" << std::endl;
 }
 
 void writeGraphToWagwan(Graph &G, GraphAttributes &GA, const std::string &filePath, 

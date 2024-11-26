@@ -92,7 +92,6 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
                             double gridWidth, double gridHeight) {
 
     for (ogdf::node u : G.nodes) {
-        std::cout << u->index();
         double x = GA.x(u);
         double y = GA.y(u);
 
@@ -109,14 +108,14 @@ void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA,
 
     std::set<std::pair<int, int>> occupiedPosition;
 
+
     for (ogdf::node u: G.nodes) {
 
-        EmplaceWithinLookup(G, GA, u, occupiedPosition, gridWidth, gridHeight);
+        EmplaceWithinLookup(G, GA, u, occupiedPosition, gridWidth, gridHeight); 
  
     }
 
 }
-
     
 void centerInGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
                   std::set<std::pair<int, int>>& populatedPositions, 
