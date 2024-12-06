@@ -83,3 +83,13 @@ std::vector<std::pair<int, ogdf::edge>> calculate_singular_intersections(const s
     std::sort(intersections.rbegin(), intersections.rend());
     return intersections;
 }
+
+int calculate_specific_intersections(const std::vector<std::pair<ogdf::edge,ogdf::edge>> &edges, const ogdf::edge &specific_edge)
+{
+    int count = 0;
+    for (auto &edge : edges)
+        if (edge.first == specific_edge || edge.second == specific_edge)
+            count++;
+    return count;
+}
+

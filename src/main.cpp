@@ -55,15 +55,17 @@ int main(int argc, char** argv)
 
     auto start_preprocess = std::chrono::high_resolution_clock::now();
 
-    FMMMLayout layout;
+    /*FMMMLayout layout;
     layout.useHighLevelOptions(true);
     layout.unitEdgeLength(width / 50.0); 
     layout.qualityVersusSpeed(FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
-    layout.call(GA);  
+    layout.call(GA);*/
 
     adjustCoordinatesToGrid(G, GA, occupiedPositions, static_cast<double>(width), static_cast<double>(height));
 
     auto end_preprocess = std::chrono::high_resolution_clock::now();
+
+    simulated_annealing(G,GA,nodesId,30,5);
 
     std::vector<std::pair<int, ogdf::edge>> intersectionCountAfter = calculate_singular_intersections(findIntersections(G,GA));
     int max_intersect_after = 0;
