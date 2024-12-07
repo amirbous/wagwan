@@ -52,7 +52,7 @@ std::vector<std::pair<int, int>> generateFramePositions(int xDown, int yDown, in
 }
 
 void EmplaceWithinLookup(ogdf::Graph &G, ogdf::GraphAttributes &GA,
-                        ogdf::node u, std::set<std::pair<int, int>>& populatedPositions,
+                        ogdf::node& u, std::set<std::pair<int, int>>& populatedPositions,
                         double gridWidth, double gridHeight) {
 
 

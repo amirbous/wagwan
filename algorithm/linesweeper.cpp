@@ -53,7 +53,8 @@ std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Gra
             for (ogdf::edge activeEdge : activeSet) {
                 // Capture GA by value to avoid dangling reference issues
                 if (edgesIntersect(GA, edge, activeEdge)) {
-                    auto edgePair = std::minmax(edge->index(), activeEdge->index());
+                    auto edgePair = std::make_pair(std::min(edge->index(), activeEdge->index()),
+                               std::max(edge->index(), activeEdge->index()));
                     if (uniqueIntersections.insert(edgePair).second) {
                         intersections.emplace_back(edge, activeEdge);
                     }

@@ -47,10 +47,11 @@ int main(int argc, char** argv)
         if (p.second > max_intersect_before) max_intersect_before = p.second; 
     }
     std::cout <<fileName << std::endl;
-    std::cout << "before: " << max_intersect_before <<std::endl;
+    std::cout << "reached this line" ;
+    //std::cout << "before: " << max_intersect_before <<std::endl;
 
 
-    std::set<std::pair<int, int>> occupiedPositions{};
+    std::set<std::pair<int, int>> occupiedPositions;
 
     auto start_preprocess = std::chrono::high_resolution_clock::now();
 
