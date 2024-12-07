@@ -27,8 +27,8 @@ struct Event {
 std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Graph &G, const ogdf::GraphAttributes &GA) {
     std::vector<Event> events;
 
+    // Create events for each edge
     for (ogdf::edge e : G.edges) {
-
         ogdf::node p1 = e->source();
         ogdf::node p2 = e->target();
 
@@ -44,11 +44,14 @@ std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Gra
     std::set<std::pair<int, int>> uniqueIntersections;
     std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections;
 
+    // Process each event in sorted order
     for (const auto &event : events) {
         ogdf::edge edge = event.edge;
 
         if (event.isStart) {
+            // Check for intersections with active edges
             for (ogdf::edge activeEdge : activeSet) {
+                // Capture GA by value to avoid dangling reference issues
                 if (edgesIntersect(GA, edge, activeEdge)) {
                     auto edgePair = std::minmax(edge->index(), activeEdge->index());
                     if (uniqueIntersections.insert(edgePair).second) {
@@ -56,14 +59,15 @@ std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Gra
                     }
                 }
             }
-            activeSet.insert(edge);
+            activeSet.insert(edge); // Add current edge to active set
         } else {
-            activeSet.erase(edge);
+            activeSet.erase(edge); // Remove the edge from active set
         }
     }
 
     return intersections;
 }
+
 
 std::map<ogdf::edge, int> calculate_singular_intersections(const std::vector<std::pair<ogdf::edge,ogdf::edge>> &edges)
 {

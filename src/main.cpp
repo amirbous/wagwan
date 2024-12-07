@@ -5,6 +5,7 @@
 #include "../include/IO.hpp"
 #include "../include/algorithm/linesweeper.hpp"
 #include "../include/algorithm/rearrangeGraph.hpp"
+#include "../include/algorithm/simulated_annealing.hpp"
 
 #include <string>
 #include <vector>
@@ -12,7 +13,7 @@
 #include <map>
 #include <set>
 
-#include "../include/algorithm/simulated_annealing.hpp"
+
 
 using namespace ogdf;
 
@@ -37,8 +38,6 @@ int main(int argc, char** argv)
 
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
-    //simulated_annealing(G,GA,nodesId,1,1);
-    
     auto start_intersect_before = std::chrono::high_resolution_clock::now();
     std::map<ogdf::edge, int> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
     auto end_intersect_before = std::chrono::high_resolution_clock::now();
@@ -66,7 +65,11 @@ int main(int argc, char** argv)
     auto end_preprocess = std::chrono::high_resolution_clock::now();
 
 
-    //simulated_annealing(G,GA,nodesId,30,5);
+    simulated_annealing(G,GA,nodesId,30,5);
+    
+    auto end_annealing = std::chrono::high_resolution_clock::now();
+
+
     std::map<ogdf::edge, int> intersectionCountAfter = calculate_singular_intersections(findIntersections(G,GA));
 
     int max_intersect_after = 0;
@@ -77,9 +80,10 @@ int main(int argc, char** argv)
     auto end_intersect_after =  std::chrono::high_resolution_clock::now();
     std::cout << "After: " <<  max_intersect_after <<std::endl;
 
-    std::cout << "Time to evaluate intersections before: " <<  std::chrono::duration_cast<std::chrono::microseconds>(end_intersect_before - start_intersect_before).count() << "ms" <<std::endl;
-    std::cout << "Time to preprocess: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_preprocess - start_preprocess).count() << "ms" << std::endl;
-    std::cout << "Time to evaluate intersections after: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_intersect_after - end_preprocess).count() << "ms" << std::endl;
+    std::cout << "Time to evaluate intersections before: " <<  std::chrono::duration_cast<std::chrono::microseconds>(end_intersect_before - start_intersect_before).count() << "µs" <<std::endl;
+    std::cout << "Time to preprocess: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_preprocess - start_preprocess).count() << "µs" << std::endl;
+    std::cout << "Time to annealing: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_annealing - end_preprocess).count() << "µs" << std::endl;
+    std::cout << "Time to evaluate intersections after: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_intersect_after - end_annealing).count() << "µs" << std::endl;
 
 
     writeGraphToJson(G, GA, outFile, nodesId, width, height);

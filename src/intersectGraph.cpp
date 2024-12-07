@@ -1,7 +1,4 @@
-
 #include <ogdf/basic/Graph.h>
-#include <ogdf/basic/graph_generators.h>
-#include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/basic/GraphAttributes.h>
 
 #include "../include/intersectGraph.hpp"
@@ -13,14 +10,14 @@ bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge e1, ogdf::edge e
     };
 
     // Lambda to calculate the orientation of three points
-    auto orientation = [&GA](ogdf::node a, ogdf::node b, ogdf::node c) {
+    auto orientation = [GA](ogdf::node a, ogdf::node b, ogdf::node c) {
         int val = (GA.y(c) - GA.y(a)) * (GA.x(b) - GA.x(a)) -
                   (GA.y(b) - GA.y(a)) * (GA.x(c) - GA.x(a));
         return (val == 0) ? 0 : (val > 0 ? 1 : 2); // 0 -> collinear, 1 -> clockwise, 2 -> counterclockwise
     };
 
     // Lambda to check if a point c lies on segment (a, b)
-    auto onSegment = [&GA](ogdf::node a, ogdf::node b, ogdf::node c) {
+    auto onSegment = [GA](ogdf::node a, ogdf::node b, ogdf::node c) {
         return (std::min(GA.x(a), GA.x(b)) <= GA.x(c) && GA.x(c) <= std::max(GA.x(a), GA.x(b))) &&
                (std::min(GA.y(a), GA.y(b)) <= GA.y(c) && GA.y(c) <= std::max(GA.y(a), GA.y(b)));
     };
@@ -44,13 +41,22 @@ bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge e1, ogdf::edge e
     if (o1 != o2 && o3 != o4) return true;
 
     // Handle special cases where points are collinear but lie on the segment
-    if (o1 == 0 && onSegment(a, b, c)) return true;
-    if (o2 == 0 && onSegment(a, b, d)) return true;
-    if (o3 == 0 && onSegment(c, d, a)) return true;
-    if (o4 == 0 && onSegment(c, d, b)) return true;
+    // Perform this check only if the edges are collinear
+    if (o1 == 0) {
+        if (onSegment(a, b, c) || onSegment(a, b, d)) return true;
+    }
+    if (o2 == 0) {
+        if (onSegment(a, b, d)) return true;
+    }
+    if (o3 == 0) {
+        if (onSegment(c, d, a)) return true;
+    }
+    if (o4 == 0) {
+        if (onSegment(c, d, b)) return true;
+    }
 
     // Additional check for collinear segments that just touch at one endpoint
-    // Ensure segments are touching at exactly one endpoint or overlap slightly
+    // Ensure segments are touching at one endpoint or overlap slightly
     if (o1 == 0 && o2 == 0 && o3 == 0 && o4 == 0) {
         // Ensure segments are touching at one endpoint
         if ((onSegment(a, b, c) && onSegment(a, b, d)) || 
