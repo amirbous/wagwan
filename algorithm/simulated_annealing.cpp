@@ -17,10 +17,10 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
 
     for (int iteration = 0; iteration < iterations; iteration++)
     {
-        std::vector<std::pair<int, ogdf::edge>> intersection_edges = calculate_singular_intersections(findIntersections(G,GA));
+        std::map<ogdf::edge, int> intersection_edges = calculate_singular_intersections(findIntersections(G,GA));
         for(auto worst_edge: intersection_edges)
         {
-            ogdf::edge edge = worst_edge.second;
+            ogdf::edge edge = worst_edge.first;
             ogdf::node source = edge->source();
             ogdf::node target = edge->target();
 
@@ -30,8 +30,8 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
 
             G.delEdge(edge);
             std::pair<int,int> best_node;
-            std::vector<std::pair<int,ogdf::edge>> best_intersection_edges;
-            int min_intersections = worst_edge.first;
+            std::map<ogdf::edge, int> best_intersection_edges;
+            int min_intersections = worst_edge.second;
             // set that stores potential new positions for this source
             std::set<std::pair<int,int>> potential_sources = {{source_x, source_y}};
             for (int explore = 1; explore <= initial_area; explore++)
@@ -75,10 +75,10 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
                         new_GA.x(new_node) = new_source.first;
                         new_GA.y(new_node) = new_source.second;
                         new_G.newEdge(new_node, target);
-                        std::vector<std::pair<int,ogdf::edge>> intersecting_edges = calculate_singular_intersections(findIntersections(new_G,new_GA));
-                        if (intersecting_edges[0].first < min_intersections)
+                        std::map<ogdf::edge, int> intersecting_edges = calculate_singular_intersections(findIntersections(new_G,new_GA));
+                        if (intersecting_edges.begin()->second < min_intersections)
                         {
-                            min_intersections = intersecting_edges[0].first;
+                            min_intersections = intersecting_edges.begin()->second;
                             best_node = new_source;
                             best_intersection_edges = intersecting_edges;
                         }
@@ -88,7 +88,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
                 potential_sources.insert(new_potential_sources.begin(), new_potential_sources.end());
             }
 
-            if (min_intersections < worst_edge.first)
+            if (min_intersections < worst_edge.second)
             {
                 // We add the edge between the new source node and the target node
                 ogdf::node new_source;

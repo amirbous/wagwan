@@ -6,60 +6,58 @@
 
 #include "../include/intersectGraph.hpp"
 
+bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge e1, ogdf::edge e2) {
+    // Lambda to check for shared nodes (edges can't intersect if they share a node)
+    auto isSharedNode = [](ogdf::node n1, ogdf::node n2, ogdf::node n3, ogdf::node n4) {
+        return (n1 == n3 || n1 == n4 || n2 == n3 || n2 == n4);
+    };
 
-int getSign(float x){
-    return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
-};
-int dot(VectorGeometry v1, VectorGeometry v2){
+    // Lambda to calculate the orientation of three points
+    auto orientation = [&GA](ogdf::node a, ogdf::node b, ogdf::node c) {
+        int val = (GA.y(c) - GA.y(a)) * (GA.x(b) - GA.x(a)) -
+                  (GA.y(b) - GA.y(a)) * (GA.x(c) - GA.x(a));
+        return (val == 0) ? 0 : (val > 0 ? 1 : 2); // 0 -> collinear, 1 -> clockwise, 2 -> counterclockwise
+    };
 
-    return v1.x*v2.x + v1.y*v2.y;
-}
-int wedge(VectorGeometry v1, VectorGeometry v2){
-    return v1.x*v2.y - v1.y*v2.x;
+    // Lambda to check if a point c lies on segment (a, b)
+    auto onSegment = [&GA](ogdf::node a, ogdf::node b, ogdf::node c) {
+        return (std::min(GA.x(a), GA.x(b)) <= GA.x(c) && GA.x(c) <= std::max(GA.x(a), GA.x(b))) &&
+               (std::min(GA.y(a), GA.y(b)) <= GA.y(c) && GA.y(c) <= std::max(GA.y(a), GA.y(b)));
+    };
 
-}
-float getNorm(VectorGeometry v) {
-    return sqrt(dot(v, v));
-}
-
-int orientation(const ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c) {
-    int val = (GA.y(c) - GA.y(a)) * (GA.x(b) - GA.x(a)) -
-              (GA.y(b) - GA.y(a)) * (GA.x(c) - GA.x(a));
-
-    if (val == 0) return 0;
-    return (val > 0) ? 1 : 2; 
-}
-
-bool onSegment(const ogdf::GraphAttributes GA, ogdf::node a, ogdf::node b, ogdf::node c) {
-    return std::min(GA.x(a), GA.x(b)) <= GA.x(c) && GA.x(c) <= std::max(GA.x(a), GA.x(b)) &&
-           std::min(GA.y(a), GA.y(b)) <= GA.y(c) && GA.y(c) <= std::max(GA.y(a), GA.y(b));
-}
-
-bool edgesIntersect(ogdf::GraphAttributes GA, ogdf::edge e1, ogdf::edge e2) {
+    // Get the nodes of the edges
     ogdf::node a = e1->source();
     ogdf::node b = e1->target();
     ogdf::node c = e2->source();
     ogdf::node d = e2->target();
 
-    // Big missing section ==> if shared node
-    if (a == c || a == d || b == c || b == d) {
-        return false; 
-    }
+    // If any of the edges share a node, return false immediately
+    if (isSharedNode(a, b, c, d)) return false;
 
+    // Calculate orientations for the pairs of points
+    int o1 = orientation(a, b, c);
+    int o2 = orientation(a, b, d);
+    int o3 = orientation(c, d, a);
+    int o4 = orientation(c, d, b);
 
-    int o1 = orientation(GA, a, b, c);
-    int o2 = orientation(GA, a, b, d);
-    int o3 = orientation(GA, c, d, a);
-    int o4 = orientation(GA, c, d, b);
-
-  
+    // If orientations are different, the edges intersect
     if (o1 != o2 && o3 != o4) return true;
 
+    // Handle special cases where points are collinear but lie on the segment
+    if (o1 == 0 && onSegment(a, b, c)) return true;
+    if (o2 == 0 && onSegment(a, b, d)) return true;
+    if (o3 == 0 && onSegment(c, d, a)) return true;
+    if (o4 == 0 && onSegment(c, d, b)) return true;
 
-    if (o1 == 0 && onSegment(GA, a, b, c)) return true;
-    if (o2 == 0 && onSegment(GA, a, b, d)) return true;
-    if (o3 == 0 && onSegment(GA, c, d, a)) return true;
-    if (o4 == 0 && onSegment(GA, c, d, b)) return true;
+    // Additional check for collinear segments that just touch at one endpoint
+    // Ensure segments are touching at exactly one endpoint or overlap slightly
+    if (o1 == 0 && o2 == 0 && o3 == 0 && o4 == 0) {
+        // Ensure segments are touching at one endpoint
+        if ((onSegment(a, b, c) && onSegment(a, b, d)) || 
+            (onSegment(c, d, a) && onSegment(c, d, b))) {
+            return true;
+        }
+    }
 
-    return false;
+    return false; // No intersection
 }
