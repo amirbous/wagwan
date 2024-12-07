@@ -1,6 +1,6 @@
 COMPILER=g++
 VERSION=c++17
-FLAGS= -Wall -Werror 
+FLAGS= -Wall -Werror
 STOPERR= -Wfatal-errors
 INCLUDE_FLAG= -I ./ogdf/include
 INCLUDE_LIB = -L./ogdf
