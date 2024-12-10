@@ -14,7 +14,7 @@ SRCS=$(wildcard $(SRC)/*.cpp)
 
 all:
 	$(COMPILER) $(SRCS) $(ALGORITHM) $(INCLUDE_FLAG) $(INCLUDE_LIB) --std=$(VERSION) -lOGDF -lCOIN -o $(TARGET)
-sanatize:
+sanitize:
 	$(COMPILER) -g -fsanitize=address $(SRCS) $(ALGORITHM) $(INCLUDE_FLAG) $(INCLUDE_LIB) --std=$(VERSION) -lOGDF -lCOIN -o $(MEM_TARGET)
 
 

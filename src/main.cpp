@@ -39,16 +39,15 @@ int main(int argc, char** argv)
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
     auto start_intersect_before = std::chrono::high_resolution_clock::now();
-    std::map<ogdf::edge, int> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
+//    std::map<ogdf::edge, int> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
     auto end_intersect_before = std::chrono::high_resolution_clock::now();
 
     int max_intersect_before = 0;
-    for (auto p : intersectionCountBefore){
-        if (p.second > max_intersect_before) max_intersect_before = p.second; 
-    }
+    //for (auto p : intersectionCountBefore){
+     //   if (p.second > max_intersect_before) max_intersect_before = p.second; 
+   // }
     std::cout <<fileName << std::endl;
-    std::cout << "reached this line" ;
-    //std::cout << "before: " << max_intersect_before <<std::endl;
+    std::cout << "before: " << max_intersect_before <<std::endl;
 
 
     std::set<std::pair<int, int>> occupiedPositions;

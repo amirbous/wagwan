@@ -7,6 +7,15 @@
 #include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/basic/GraphAttributes.h>
 
+#include "../include/algorithm/simulated_annealing.hpp"
+#include "../include/algorithm/linesweeper.hpp"
+
+#include <set>
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/graph_generators.h>
+#include <ogdf/fileformats/GraphIO.h>
+#include <ogdf/basic/GraphAttributes.h>
+
 void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unordered_map<ogdf::node, int> &nodes_id, int iterations, int initial_area)
 {
     auto probability = [](int energy, int energy_new, double temperature) {
@@ -17,7 +26,6 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
     for (auto node : G.nodes)
     {
             check_node[{GA.x(node), GA.y(node)}] = true;
-
     }
 
     for (int iteration = 1; iteration <= iterations; iteration++)
@@ -36,7 +44,6 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             int source_y = GA.y(source);
 
             G.delEdge(edge);  // Safely delete the edge
-            std::cout << GA.x(source);
 
             std::map<ogdf::edge, int> best_intersection_edges;
             int energy = worst_edge.second;
@@ -118,25 +125,20 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
                 GA.x(new_node) = new_source.first;
                 GA.y(new_node) = new_source.second;
 
-                // Check if the edge creation is successful
+                G.newEdge(new_node, target);
+                nodes_id[new_node] = nodes_id[source];
+                nodes_id.erase(source);
 
-                    G.newEdge(new_node, target);
-                    nodes_id[new_node] = nodes_id[source];
-                    nodes_id.erase(source);
-
-                    check_node[new_source] = true;
-                    check_node[{source_x, source_y}] = false;
-
-                    intersection_edges = best_intersection_edges;
+                check_node[new_source] = true;
+                check_node[{source_x, source_y}] = false;
             }
-            
             else
             {
-
-                    G.newEdge(source, target);
-
+                // Re-create the edge if the new configuration is not accepted
+                G.newEdge(source, target);
             }
         }
     }
 }
+
 
