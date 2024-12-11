@@ -17,6 +17,7 @@
 
 using namespace ogdf;
 
+
 int main(int argc, char** argv)
 {
 
@@ -39,13 +40,11 @@ int main(int argc, char** argv)
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
     auto start_intersect_before = std::chrono::high_resolution_clock::now();
-//    std::map<ogdf::edge, int> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
+    std::map<int, ogdf::edge, std::greater<int>> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
     auto end_intersect_before = std::chrono::high_resolution_clock::now();
 
-    int max_intersect_before = 0;
-    //for (auto p : intersectionCountBefore){
-     //   if (p.second > max_intersect_before) max_intersect_before = p.second; 
-   // }
+    int max_intersect_before = intersectionCountBefore.begin()->first;
+
     std::cout <<fileName << std::endl;
     std::cout << "before: " << max_intersect_before <<std::endl;
 
@@ -65,17 +64,15 @@ int main(int argc, char** argv)
     auto end_preprocess = std::chrono::high_resolution_clock::now();
 
 
-    simulated_annealing(G,GA,nodesId,30,5);
+    //simulated_annealing(G,GA,nodesId,30,5);
     
     auto end_annealing = std::chrono::high_resolution_clock::now();
 
 
-    std::map<ogdf::edge, int> intersectionCountAfter = calculate_singular_intersections(findIntersections(G,GA));
+    std::map<int, ogdf::edge, std::greater<int>> intersectionCountAfter = calculate_singular_intersections(findIntersections(G,GA));
 
-    int max_intersect_after = 0;
-    for (auto p : intersectionCountAfter){
-        if (p.second > max_intersect_after) max_intersect_after = p.second; 
-    }
+    int max_intersect_after = intersectionCountAfter.begin()->first;
+
 
     auto end_intersect_after =  std::chrono::high_resolution_clock::now();
     std::cout << "After: " <<  max_intersect_after <<std::endl;

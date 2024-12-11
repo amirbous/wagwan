@@ -16,7 +16,7 @@
 #include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/basic/GraphAttributes.h>
 
-void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unordered_map<ogdf::node, int> &nodes_id, int iterations, int initial_area)
+void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unordered_map<ogdf::node, int> &nodes_id, int max_iterations, int initial_area)
 {
     auto probability = [](int energy, int energy_new, double temperature) {
         return (energy_new < energy) ? 1.0 : std::exp(-(energy_new - energy) / temperature);
@@ -28,15 +28,16 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             check_node[{GA.x(node), GA.y(node)}] = true;
     }
 
-    for (int iteration = 1; iteration <= iterations; iteration++)
+
+    for (int iteration = 1; iteration <= max_iterations; iteration++)
     {
-        double temperature = 1.0 - static_cast<double>(iteration + 1) / iterations;
-        std::map<ogdf::edge, int> intersection_edges = calculate_singular_intersections(findIntersections(G, GA));
-        
+        double temperature = 1.0 - static_cast<double>(iteration + 1) / max_iterations;
+        std::map<int, ogdf::edge,  std::greater<int>> intersection_edges = calculate_singular_intersections(findIntersections(G, GA));
+
         for (auto worst_edge : intersection_edges)
         {
 
-            ogdf::edge edge = worst_edge.first;
+            ogdf::edge edge = worst_edge.second;
             ogdf::node source = edge->source();
             ogdf::node target = edge->target();
 
@@ -45,8 +46,8 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
 
             G.delEdge(edge);  // Safely delete the edge
 
-            std::map<ogdf::edge, int> best_intersection_edges;
-            int energy = worst_edge.second;
+            std::map<int, ogdf::edge,  std::greater<int>> best_intersection_edges;
+            int energy = worst_edge.first;
             
             // Set that stores potential new positions for this source
             std::set<std::pair<int, int>> potential_sources;
@@ -96,7 +97,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             auto it = potential_sources.begin();
             std::advance(it, random_idx);
 
-            std::pair<int, int> new_source = *it;
+            auto new_source = *it;
 
             int energy_new = 0;
             if (!check_node[new_source])
@@ -126,7 +127,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
                 GA.y(new_node) = new_source.second;
 
                 G.newEdge(new_node, target);
-                nodes_id[new_node] = nodes_id[source];
+                nodes_id[new_node] = nodes_id[target];
                 nodes_id.erase(source);
 
                 check_node[new_source] = true;

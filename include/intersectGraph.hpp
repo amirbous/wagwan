@@ -7,7 +7,7 @@
 #include <ogdf/basic/GraphAttributes.h>
 
 
-bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge e1, ogdf::edge e2);
+bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge& e1, ogdf::edge& e2);
 
 
 
