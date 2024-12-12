@@ -13,8 +13,6 @@
 #include <map>
 #include <set>
 
-
-
 using namespace ogdf;
 
 
@@ -64,7 +62,7 @@ int main(int argc, char** argv)
     auto end_preprocess = std::chrono::high_resolution_clock::now();
 
 
-    //simulated_annealing(G,GA,nodesId,30,5);
+    simulated_annealing(G,GA,nodesId,30,5, width, height);
     
     auto end_annealing = std::chrono::high_resolution_clock::now();
 
