@@ -3,6 +3,7 @@
 
 #include "../include/intersectGraph.hpp"
 
+
 bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge& e1, ogdf::edge& e2) {
     // Lambda to check for shared nodes (edges can't intersect if they share a node)
     auto isSharedNode = [](ogdf::node n1, ogdf::node n2, ogdf::node n3, ogdf::node n4) {
