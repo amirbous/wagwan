@@ -17,8 +17,8 @@
 void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unordered_map<ogdf::node, int> &nodes_id, int max_iterations, int initial_area,
                             int width, int height)
 {
-    auto probability = [](int energy, int energy_new, double temperature) {
-        return (energy_new < energy) ? 1.0 : std::exp(-(energy_new - energy) / temperature);
+    auto probability = [](double energy, double energy_new, double temperature) {
+        return (energy_new < energy) ? 1.0 : (temperature == 0 ? 0 : std::exp(-(energy_new - energy) / temperature));
     };
 
     std::map<std::pair<int, int>, bool> check_node{};
@@ -27,16 +27,16 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             check_node[{GA.x(node), GA.y(node)}] = true;
     }
 
-    int iteration_count = 0, energy = 0, energy_new = 0;
+    int iteration_count = 0;
+    double energy = 0, energy_new = 0;
     int highestCount = INT_MAX;
-    double temperate = 0.0;
     std::map<int, ogdf::edge,  std::greater<int>> intersection_edges{},
                                                 local_intersection_edges{};
     ogdf::node source{},
                 target{};
     int source_x = 0, source_y = 0;
-    double temperature = 0.0;
     while (iteration_count < max_iterations && highestCount > 0) {
+        double temperature = 1.0 - static_cast<double>(iteration_count + 1) / static_cast<double>(max_iterations);
 
         // extracting data about worst edge
         intersection_edges = calculate_singular_intersections(findIntersections(G, GA));
@@ -62,48 +62,28 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         // start simulated annealing
         energy = highestCount;
 
-        // extract potential new locations
-        std::set<std::pair<int, int>> potential_sources;
-        std::set<std::pair<int, int>> ring_sources = {{source_x, source_y}};
-            
-        for (int explore = 1; explore <= initial_area; explore++)
-        {
-            int addition = iteration_count + 1;
-            std::set<std::pair<int, int>> new_potential_sources;
-            // Iterate through last layer potential new positions
-            for (auto last_source : ring_sources)
-            {
-                int temp_x = last_source.first;
-                int temp_y = last_source.second;
-                std::set<std::pair<int, int>> temp_potential_sources = {
-                    {temp_x + addition, source_y},
-                    {temp_x, temp_y + addition},
-                    {temp_x + addition, temp_y + addition},
-                    {temp_x - addition, temp_y - addition},
-                    {temp_x - addition, temp_y},
-                    {temp_x, temp_y - addition},
-                    {temp_x + addition, temp_y - addition},
-                    {temp_x - addition, temp_y + addition}
-                };
-                new_potential_sources.insert(temp_potential_sources.begin(), temp_potential_sources.end());
-            }
-            ring_sources.clear();
-            ring_sources.insert(new_potential_sources.begin(), new_potential_sources.end());
-            potential_sources.insert(new_potential_sources.begin(), new_potential_sources.end());
-        }
-        if (potential_sources.empty()) {
-            std::cerr << "Error: No potential sources available!" << std::endl;
-            continue;  // Or handle this case appropriately
-        }
-
-        // getting a random element from the potential list
+        // Random angle + random distance based on temperature
+        int x,y;
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distribution(0, potential_sources.size() - 1);
-        int random_idx = distribution(gen);
-        auto it = potential_sources.begin();
-        std::advance(it, random_idx);
-        auto new_source = *it;
+        do
+        {
+            std::uniform_real_distribution<> angle_dist(0, 2 * M_PI);
+            std::uniform_int_distribution<> length_dist(0, static_cast<int>(temperature * 10)); // Length as an integer
+
+            double angle = angle_dist(gen);
+            int length = length_dist(gen);
+
+            double new_x = source_x + length * std::cos(angle);
+            double new_y = source_y + length * std::sin(angle);
+
+            x = static_cast<int>(std::round(new_x));
+            y = static_cast<int>(std::round(new_y));
+        }
+        while (x < 0 || y < 0 || x >= width || y >= height );
+
+        std::pair<int, int> new_source = {x, y};
+
 
         energy_new = 0;
         if (!check_node[new_source])
@@ -119,8 +99,9 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             local_intersection_edges = calculate_singular_intersections(intersections);
             energy_new = calculate_specific_intersections(intersections, new_edge);
 
-            // Safely delete the edge and node after testing
-
+            // Safely delete the edge and restore source node
+            GA.x(source) = source_x;
+            GA.y(source) = source_y;
             G.delEdge(new_edge);
         }
 

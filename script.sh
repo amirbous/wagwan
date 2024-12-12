@@ -17,9 +17,9 @@ fi
 
 # Define folders
 INPUT_DIR="resources/small"
-OUTPUT_DIR="outputs"
+OUTPUT_DIR="outputs/small"
 PROGRAM="./wagwan.out"
-TIME_LIMIT=10
+TIME_LIMIT=100
 
 mkdir -p "$OUTPUT_DIR"
 
