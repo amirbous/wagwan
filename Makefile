@@ -22,4 +22,4 @@ tight:
 	$(COMPILER) $(SRCS) $(FLAGS) $(INCLUDE_FLAG) $(INCLUDE_LIB) $(STOPERR) $(ALGORITHMS) -lOGDF -lCOIN --std=$(VERSION) -o $(TARGET)
 
 clean:
-	rm $(TARGET)
+	rm *.out

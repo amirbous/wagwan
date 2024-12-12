@@ -32,7 +32,6 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
     double temperate = 0.0;
     std::map<int, ogdf::edge,  std::greater<int>> intersection_edges{},
                                                 local_intersection_edges{};
-    ogdf::edge worst_edge{};
     ogdf::node source{},
                 target{};
     int source_x = 0, source_y = 0;
@@ -41,7 +40,20 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
 
         // extracting data about worst edge
         intersection_edges = calculate_singular_intersections(findIntersections(G, GA));
-        worst_edge = intersection_edges.begin()->second;
+
+        // check if already no intersections are found :)
+        if (intersection_edges.empty()) {
+            std::cout << "REACHED 0 INTERSECTION WITHIN " << iteration_count << " ITERATIONS!" << std::endl;
+            return;
+        }
+
+        ogdf::edge worst_edge = intersection_edges.begin()->second;
+        source = worst_edge->source();
+        target = worst_edge->target();
+
+        source_x = GA.x(source);
+        source_y = GA.y(source);
+
         highestCount = intersection_edges.begin()->first;
 
         // del edge to replace
@@ -94,14 +106,15 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         auto new_source = *it;
 
         energy_new = 0;
-
         if (!check_node[new_source])
         {
+
             //ogdf::node new_node = G.newNode();
+
             GA.x(source) = new_source.first;
             GA.y(source) = new_source.second;
             ogdf::edge new_edge = G.newEdge(source, target);
-            
+
             std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA);
             local_intersection_edges = calculate_singular_intersections(intersections);
             energy_new = calculate_specific_intersections(intersections, new_edge);
@@ -109,7 +122,6 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             // Safely delete the edge and node after testing
 
             G.delEdge(new_edge);
-
         }
 
         std::uniform_real_distribution<> distribution2(0.0, 1.0);
@@ -128,15 +140,15 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
 
             G.newEdge(source, target);
 
-            
         }
         else
         {
             // Re-create the edge if the new configuration is not accepted
             G.newEdge(source, target);
         }
-
+    iteration_count ++;
     }
+    std::cout << "MAXIMUM NUMBER OF ITERATIONS ACHIEVED" << std::endl;
 
 }
 
