@@ -15,7 +15,7 @@
 
 
 void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unordered_map<ogdf::node, int> &nodes_id, int max_iterations,
-                            int width, int height)
+                            int width, int height, int cooling_technique, double initial_temperature, double cooling_rate)
 {
     const static unsigned int seed = 42;
     std::mt19937 gen(seed);
@@ -33,17 +33,21 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
     }
 
     int iteration_count = 0;
-    double energy = 0, energy_new = 0;
+    double energy = 0, energy_new = INT_MAX;
     int highestCount = INT_MAX;
     std::map<int, ogdf::edge,  std::greater<int>> intersection_edges{},
                                                 local_intersection_edges{};
     ogdf::node source{},
                 target{};
     int source_x = 0, source_y = 0;
+    double temperature;
     while (iteration_count < max_iterations && highestCount > 0) {
 
-
-        double temperature = 1.0 - static_cast<double>(iteration_count + 1) / static_cast<double>(max_iterations);
+        if (cooling_technique == 0)
+            temperature = 1.0 - static_cast<double>(iteration_count + 1) / max_iterations;
+        else if (cooling_technique == 1)
+            temperature = initial_temperature / log(static_cast<double>(iteration_count + 2));
+        else temperature = initial_temperature * std::pow(cooling_rate, iteration_count);
 
 
         // extracting data about worst edge
@@ -57,7 +61,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         }
         // getting a random edge from the 4 first edges
         auto  lookupEdge_it = intersection_edges.begin();
-        /*std::uniform_int_distribution<> dist(0, std::min(0, (int)intersection_edges.size() - 1));
+        /*std::uniform_int_distribution<> dist(0, intersection_edges.size() - 1);
         int random_advance = dist(gen);
         std::advance(lookupEdge_it, random_advance);*/
 
@@ -76,22 +80,22 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         // start simulated annealing
         energy = highestCount;
 
-        // Random angle + random distance based on temperature
+        // random angle + random distance based on temperature
         int x,y;
 
         do
         {
             std::uniform_real_distribution<> angle_dist(0, 2 * M_PI);
-            std::uniform_int_distribution<> length_dist(0, static_cast<int>(temperature *  200)); // Length as an integer
+            std::uniform_int_distribution<> length_dist(0, static_cast<int>(temperature * width));
 
             double angle = angle_dist(gen);
             int length = length_dist(gen);
-            if (iteration_count % 10 == 0) {
+            /*if (iteration_count % 10 == 0) {
                 std::cout << iteration_count << "  ITERATIONS HAVE PASSED!" << 
                                                 ", LENGTH= " << length << 
                                                 ", LOOKUP DISTANCE= " << temperature << 
                                                 ", ANGLE= " << angle << std::endl;
-            }
+            }*/
 
 
             double new_x = source_x + length * std::cos(angle);
@@ -104,8 +108,6 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
 
         std::pair<int, int> new_source = {x, y};
 
-
-        energy_new = INT_MAX;
         if (!check_node[new_source])
         {
 
@@ -114,7 +116,6 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             ogdf::edge new_edge = G.newEdge(source, target);
 
             std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA);
-            local_intersection_edges = calculate_singular_intersections(intersections);
             energy_new = calculate_specific_intersections(intersections, new_edge);
 
 
@@ -122,29 +123,33 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             GA.x(source) = source_x;
             GA.y(source) = source_y;
             G.delEdge(new_edge);
-        }
 
-        std::uniform_real_distribution<> distribution2(0.0, 1.0);
-        double random_probability = distribution2(gen);
+            std::uniform_real_distribution<> distribution2(0.0, 1.0);
+            double random_probability = distribution2(gen);
 
-        if (probability(energy, energy_new, temperature) >= random_probability)
-        {
-            // We add the edge between the new source node and the target node
+            if (probability(energy, energy_new, temperature) >= random_probability)
+            {
+                // we add the edge between the new source node and the target node
 
-            check_node[{GA.x(source), GA.y(source)}] = false;
+                check_node[{GA.x(source), GA.y(source)}] = false;
 
-            GA.x(source) = new_source.first;
-            GA.y(source) = new_source.second;
+                GA.x(source) = new_source.first;
+                GA.y(source) = new_source.second;
 
-            check_node[new_source] = true;
+                check_node[new_source] = true;
 
-            G.newEdge(source, target);
+                G.newEdge(source, target);
 
+            }
+            else
+            {
+                // re-create the edge if the new configuration is not accepted
+                G.newEdge(source, target);
+            }
         }
         else
         {
-            // Re-create the edge if the new configuration is not accepted
-            G.newEdge(source, target);
+            G.newEdge(source,target);
         }
     iteration_count ++;
     }
