@@ -6,8 +6,8 @@
 Best results competitions 2024 graphs:
 
 
-Graph  | Before | After
-------------- | ------------- | Linear | Logarithmic | Exponential
+ Linear | Logarithmic | Exponential
+------------- | ------------- |
 Graph1   | 4 | 3 | x  
 Graph2   | 0 | 6 | 12 
 Graph3   | 8 | 8 | 5
