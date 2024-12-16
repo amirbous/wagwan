@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     auto end_preprocess = std::chrono::high_resolution_clock::now();
 
 
-    simulated_annealing(G,GA,nodesId,800, width, height, 2, 1.0, 0.95);
+    simulated_annealing(G,GA,nodesId,5000, width, height, 2, 1.0, 0.99);
     
     auto end_annealing = std::chrono::high_resolution_clock::now();
 

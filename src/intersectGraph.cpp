@@ -31,6 +31,16 @@ bool onSegment(const ogdf::GraphAttributes& GA, ogdf::node a, ogdf::node b, ogdf
            (std::min(GA.y(a), GA.y(b)) <= GA.y(c) && GA.y(c) <= std::max(GA.y(a), GA.y(b)));
 }
 
+bool check_node_on_edge(const ogdf::Graph &G, const ogdf::GraphAttributes &GA, const ogdf::node &new_source)
+{
+    bool check = true;
+    for (auto edge: G.edges)
+    {
+        check &= onSegment(GA, edge->source(), edge->target(), new_source);
+    }
+    return check;
+}
+
 bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge& e1, ogdf::edge& e2) {
     // Get the nodes of the edges
     ogdf::node a = e1->source();

@@ -8,11 +8,39 @@
 
 #include "../include/algorithm/simulated_annealing.hpp"
 #include "../include/algorithm/linesweeper.hpp"
-#include "../include/algorithm/rearrangeGraph.hpp"
+#include "../include/intersectGraph.hpp"
 
 #include <set>
 #include <limits.h>
 
+std::pair<int,int> generate_new_source(std::mt19937 gen, double temperature, int source_x, int source_y, int width, int height)
+{
+    int x,y;
+    do
+    {
+        std::uniform_real_distribution<> angle_dist(0, 2 * M_PI);
+        std::uniform_int_distribution<> length_dist(0, static_cast<int>(temperature * 50));
+
+        double angle = angle_dist(gen);
+        int length = length_dist(gen);
+        /*if (iteration_count % 10 == 0) {
+            std::cout << iteration_count << "  ITERATIONS HAVE PASSED!" <<
+                                            ", LENGTH= " << length <<
+                                            ", LOOKUP DISTANCE= " << temperature <<
+                                            ", ANGLE= " << angle << std::endl;
+        }*/
+
+
+        double new_x = source_x + length * std::cos(angle);
+        double new_y = source_y + length * std::sin(angle);
+
+        x = static_cast<int>(std::round(new_x));
+        y = static_cast<int>(std::round(new_y));
+    }
+    while (x < 0 || y < 0 || x >= width || y >= height );
+
+    return {x,y};
+}
 
 void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unordered_map<ogdf::node, int> &nodes_id, int max_iterations,
                             int width, int height, int cooling_technique, double initial_temperature, double cooling_rate)
@@ -81,77 +109,53 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         energy = highestCount;
 
         // random angle + random distance based on temperature
-        int x,y;
+        std::vector<std::pair<int, int>> new_sources_vector;
+        while(new_sources_vector.size() < 20)
+            new_sources_vector.push_back(generate_new_source(gen, temperature, source_x, source_y, width, height));
 
-        do
+        bool check = false;
+        for(auto new_source: new_sources_vector)
         {
-            std::uniform_real_distribution<> angle_dist(0, 2 * M_PI);
-            std::uniform_int_distribution<> length_dist(0, static_cast<int>(temperature * width));
-
-            double angle = angle_dist(gen);
-            int length = length_dist(gen);
-            /*if (iteration_count % 10 == 0) {
-                std::cout << iteration_count << "  ITERATIONS HAVE PASSED!" << 
-                                                ", LENGTH= " << length << 
-                                                ", LOOKUP DISTANCE= " << temperature << 
-                                                ", ANGLE= " << angle << std::endl;
-            }*/
-
-
-            double new_x = source_x + length * std::cos(angle);
-            double new_y = source_y + length * std::sin(angle);
-
-            x = static_cast<int>(std::round(new_x));
-            y = static_cast<int>(std::round(new_y));
-        }
-        while (x < 0 || y < 0 || x >= width || y >= height );
-
-        std::pair<int, int> new_source = {x, y};
-
-        if (!check_node[new_source])
-        {
-
+            if (check)
+                break;
             GA.x(source) = new_source.first;
             GA.y(source) = new_source.second;
-            ogdf::edge new_edge = G.newEdge(source, target);
-
-            std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA);
-            energy_new = calculate_specific_intersections(intersections, new_edge);
-
-
-
-            GA.x(source) = source_x;
-            GA.y(source) = source_y;
-            G.delEdge(new_edge);
-
-            std::uniform_real_distribution<> distribution2(0.0, 1.0);
-            double random_probability = distribution2(gen);
-
-            if (probability(energy, energy_new, temperature) >= random_probability)
+            if (!check_node[new_source] & !check_node_on_edge(G,GA,source))
             {
-                // we add the edge between the new source node and the target node
+                ogdf::edge new_edge = G.newEdge(source, target);
 
-                check_node[{GA.x(source), GA.y(source)}] = false;
+                std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA);
 
-                GA.x(source) = new_source.first;
-                GA.y(source) = new_source.second;
+                energy_new = calculate_singular_intersections(intersections).begin()->first;
 
-                check_node[new_source] = true;
+                G.delEdge(new_edge);
 
-                G.newEdge(source, target);
+                std::uniform_real_distribution<> distribution2(0.0, 1.0);
+                double random_probability = distribution2(gen);
 
+                if (probability(energy, energy_new, temperature) >= random_probability)
+                {
+                    // we add the edge between the new source node and the target node
+                    check_node[{GA.x(source), GA.y(source)}] = false;
+                    check_node[new_source] = true;
+                    check = true;
+                }
+                else
+                {
+                    // re-create the edge if the new configuration is not accepted
+                    GA.x(source) = source_x;
+                    GA.y(source) = source_y;
+                }
             }
             else
             {
-                // re-create the edge if the new configuration is not accepted
-                G.newEdge(source, target);
+                GA.x(source) = source_x;
+                GA.y(source) = source_y;
             }
         }
-        else
-        {
-            G.newEdge(source,target);
-        }
-    iteration_count ++;
+
+        G.newEdge(source,target);
+        iteration_count ++;
     }
     std::cout << "MAXIMUM NUMBER OF ITERATIONS ACHIEVED" << std::endl;
 
