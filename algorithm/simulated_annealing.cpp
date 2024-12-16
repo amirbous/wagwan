@@ -13,7 +13,7 @@
 #include <set>
 #include <limits.h>
 
-std::pair<int,int> generate_new_source(std::mt19937 gen, double temperature, int source_x, int source_y, int width, int height)
+std::pair<int,int> generate_new_source(std::mt19937 &gen, double &temperature, int &source_x, int &source_y, int &width, int &height)
 {
     int x,y;
     do
@@ -94,23 +94,69 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         std::advance(lookupEdge_it, random_advance);*/
 
         ogdf::edge worst_edge = lookupEdge_it->second;
+
+        if (iteration_count%2!=0)
+        {
+            std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G,GA);
+            for (auto intersection : intersections)
+            {
+                if (intersection.first == worst_edge)
+                {
+                    worst_edge = intersection.second;
+                    break;
+                }
+
+                if (intersection.second == worst_edge)
+                {
+                    worst_edge = intersection.first;
+                    break;
+                }
+            }
+        }
+
+        /*if(iteration_count % 2 == 0)
+        {
+            source = worst_edge->source();
+            target = worst_edge->target();
+        }
+        else
+        {
+            std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G,GA);
+            for (auto intersection : intersections)
+            {
+                if (intersection.first == worst_edge)
+                {
+                    source = intersection.second->source();
+                    target = intersection.second->target();
+                    break;
+                }
+
+                if (intersection.second == worst_edge)
+                {
+                    source = intersection.first->source();
+                    target = intersection.first->target();
+                    break;
+                }
+            }
+        }*/
+
         source = worst_edge->source();
         target = worst_edge->target();
 
         source_x = GA.x(source);
         source_y = GA.y(source);
 
-        highestCount = lookupEdge_it->first;
+        highestCount = calculate_specific_intersections(findIntersections(G,GA), worst_edge);
 
         // del edge to replace
-        G.delEdge(worst_edge);
+        //G.delEdge(worst_edge);
 
         // start simulated annealing
         energy = highestCount;
 
         // random angle + random distance based on temperature
         std::vector<std::pair<int, int>> new_sources_vector;
-        while(new_sources_vector.size() < 20)
+        while(new_sources_vector.size() < 10)
             new_sources_vector.push_back(generate_new_source(gen, temperature, source_x, source_y, width, height));
 
         bool check = false;
@@ -122,13 +168,13 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             GA.y(source) = new_source.second;
             if (!check_node[new_source] & !check_node_on_edge(G,GA,source))
             {
-                ogdf::edge new_edge = G.newEdge(source, target);
+                //ogdf::edge new_edge = G.newEdge(source, target);
 
                 std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA);
 
                 energy_new = calculate_singular_intersections(intersections).begin()->first;
 
-                G.delEdge(new_edge);
+                //G.delEdge(new_edge);
 
                 std::uniform_real_distribution<> distribution2(0.0, 1.0);
                 double random_probability = distribution2(gen);
@@ -136,7 +182,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
                 if (probability(energy, energy_new, temperature) >= random_probability)
                 {
                     // we add the edge between the new source node and the target node
-                    check_node[{GA.x(source), GA.y(source)}] = false;
+                    check_node[{source_x, source_y}] = false;
                     check_node[new_source] = true;
                     check = true;
                 }
@@ -154,7 +200,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             }
         }
 
-        G.newEdge(source,target);
+        //G.newEdge(source,target);
         iteration_count ++;
     }
     std::cout << "MAXIMUM NUMBER OF ITERATIONS ACHIEVED" << std::endl;
