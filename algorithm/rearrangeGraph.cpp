@@ -166,13 +166,6 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
         }
     }
 
-    for (const auto  &u : G.nodes) {
-        if (check_node_on_anyEdge(G, GA, u)) {
-            resolveNodeOnEdge(G, GA, populatedPositions, 
-                u, gridWidth, gridHeight);
-        }
-    }
-
 
 
 }

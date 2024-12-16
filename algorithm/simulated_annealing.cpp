@@ -166,7 +166,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
                 break;
             GA.x(source) = new_source.first;
             GA.y(source) = new_source.second;
-            if (!check_node[new_source] & !check_node_on_edge(G,GA,source))
+            if (!check_node[new_source] & !check_node_on_anyEdge(G,GA,source))
             {
                 //ogdf::edge new_edge = G.newEdge(source, target);
 
