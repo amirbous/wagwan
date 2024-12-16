@@ -5,14 +5,6 @@
 
 
 
-bool nodeOnEdge (const ogdf::node& node, const ogdf::edge& edge, const ogdf::GraphAttributes& GA) {
-    ogdf::node a = node;
-    ogdf::node b = edge->source();
-    ogdf::node c = edge->target();
-    return (std::min(GA.x(a), GA.x(b)) <= GA.x(c) && GA.x(c) <= std::max(GA.x(a), GA.x(b))) &&
-               (std::min(GA.y(a), GA.y(b)) <= GA.y(c) && GA.y(c) <= std::max(GA.y(a), GA.y(b)));
-    
-}
 // Function to check for shared nodes (edges can't intersect if they share a node)
 bool isSharedNode(ogdf::node n1, ogdf::node n2, ogdf::node n3, ogdf::node n4) {
     return (n1 == n3 || n1 == n4 || n2 == n3 || n2 == n4);
@@ -26,17 +18,44 @@ int orientation(const ogdf::GraphAttributes& GA, ogdf::node a, ogdf::node b, ogd
 }
 
 // Function to check if a point c lies on segment (a, b)
-bool onSegment(const ogdf::GraphAttributes& GA, ogdf::node a, ogdf::node b, ogdf::node c) {
-    return (std::min(GA.x(a), GA.x(b)) <= GA.x(c) && GA.x(c) <= std::max(GA.x(a), GA.x(b))) &&
-           (std::min(GA.y(a), GA.y(b)) <= GA.y(c) && GA.y(c) <= std::max(GA.y(a), GA.y(b)));
+bool nodeOnSegment(const ogdf::GraphAttributes& GA, ogdf::node a, ogdf::node b, ogdf::node c) {
+    std::pair<int, int> c_pos = {GA.x(c), GA.y(c)};
+    return positionOnSegment(GA, a, b, c_pos);
+}
+bool positionOnSegment(const ogdf::GraphAttributes& GA, ogdf::node a, ogdf::node b, const std::pair<int, int>& pos) {
+    int ax = (int)GA.x(a), ay = (int)GA.y(a);
+    int bx = (int)GA.x(b), by = (int)GA.y(b);
+    int cx = pos.first, cy = pos.second;
+
+    if ((cx == ax && cy == ay) || (cx == bx && cy == by)) {
+        return false;
+    }
+
+    int crossProduct = (cy - ay) * (bx - ax) - (cx - ax) * (by - ay);
+    
+    return (crossProduct == 0) && 
+       (std::min(ax, bx) <= cx && cx <= std::max(ax, bx)) &&
+       (std::min(ay, by) <= cy && cy <= std::max(ay, by));
+
 }
 
-bool check_node_on_edge(const ogdf::Graph &G, const ogdf::GraphAttributes &GA, const ogdf::node &new_source)
+bool check_node_on_anyEdge(const ogdf::Graph &G, const ogdf::GraphAttributes &GA, const ogdf::node &new_source)
 {
-    bool check = true;
+    bool check = false;
+
     for (auto edge: G.edges)
     {
-        check &= onSegment(GA, edge->source(), edge->target(), new_source);
+        check |= nodeOnSegment(GA, edge->source(), edge->target(), new_source);
+    }
+    return check;
+}
+bool check_pos_on_anyEdge(const ogdf::Graph &G, const ogdf::GraphAttributes &GA, const std::pair<int, int>& pos)
+{
+    bool check = false;
+
+    for (auto edge: G.edges)
+    {
+        check |= positionOnSegment(GA, edge->source(), edge->target(), pos);
     }
     return check;
 }
@@ -63,24 +82,24 @@ bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge& e1, ogdf::edge&
     // Handle special cases where points are collinear but lie on the segment
     // Perform this check only if the edges are collinear
     if (o1 == 0) {
-        if (onSegment(GA, a, b, c) || onSegment(GA, a, b, d)) return true;
+        if (nodeOnSegment(GA, a, b, c) || nodeOnSegment(GA, a, b, d)) return true;
     }
     if (o2 == 0) {
-        if (onSegment(GA, a, b, d)) return true;
+        if (nodeOnSegment(GA, a, b, d)) return true;
     }
     if (o3 == 0) {
-        if (onSegment(GA, c, d, a)) return true;
+        if (nodeOnSegment(GA, c, d, a)) return true;
     }
     if (o4 == 0) {
-        if (onSegment(GA, c, d, b)) return true;
+        if (nodeOnSegment(GA, c, d, b)) return true;
     }
 
     // Additional check for collinear segments that just touch at one endpoint
     // Ensure segments are touching at one endpoint or overlap slightly
     if (o1 == 0 && o2 == 0 && o3 == 0 && o4 == 0) {
         // Ensure segments are touching at one endpoint
-        if ((onSegment(GA, a, b, c) && onSegment(GA, a, b, d)) || 
-            (onSegment(GA, c, d, a) && onSegment(GA, c, d, b))) {
+        if ((nodeOnSegment(GA, a, b, c) && nodeOnSegment(GA, a, b, d)) || 
+            (nodeOnSegment(GA, c, d, a) && nodeOnSegment(GA, c, d, b))) {
             return true;
         }
     }
