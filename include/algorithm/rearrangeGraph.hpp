@@ -14,4 +14,8 @@ void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA,
 void centerInGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
     double gridWidth, double gridHeight);
 
+void resolveNodeOnEdge(ogdf::Graph &G, ogdf::GraphAttributes &GA,
+                        std::set<std::pair<int, int>>& populatedPositions, ogdf::node u,
+                        double gridWidth, double gridHeight);
+
 #endif

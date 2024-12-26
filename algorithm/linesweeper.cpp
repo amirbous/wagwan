@@ -12,6 +12,22 @@
 #include <set>
 
 
+
+// overload of linesweeper find intersections, nested loops, under the assumption that length of edges is way less than all of edges
+std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Graph &G, const ogdf::GraphAttributes &GA, std::vector<ogdf::edge> edges) {
+    std::vector<std::pair<ogdf::edge, ogdf::edge>> intersectinos;
+    for (auto & graph_edge : G.edges) 
+    {
+        for (auto & incident_edge : edges) {
+            if (edgesIntersect(GA, graph_edge, incident_edge)) {
+                intersectinos.push_back({graph_edge, incident_edge});
+            }
+        }
+    }
+    return intersectinos;
+
+}
+
 struct Event {
     double x;
     bool isStart;
@@ -23,6 +39,10 @@ struct Event {
     return edge->index() < other.edge->index(); // Tie-breaking by edge index
 }
 };
+
+
+
+
 // Adjust findIntersections to recheck the active set
 std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Graph &G, const ogdf::GraphAttributes &GA) {
     std::vector<Event> events;

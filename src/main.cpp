@@ -6,6 +6,7 @@
 #include "../include/algorithm/linesweeper.hpp"
 #include "../include/algorithm/rearrangeGraph.hpp"
 #include "../include/algorithm/simulated_annealing.hpp"
+#include "../include/intersectGraph.hpp"
 
 #include <string>
 #include <vector>
@@ -25,6 +26,7 @@ int main(int argc, char** argv)
     }
     const std::string fileName = argv[1];
     const std::string outFile = argv[2];
+    const int cooling_technique = std::stoi(argv[3]);
 
 	Graph G;
 
@@ -36,6 +38,9 @@ int main(int argc, char** argv)
     int height, width;
 
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
+
+ 
+ 
 
     auto start_intersect_before = std::chrono::high_resolution_clock::now();
     std::map<int, ogdf::edge, std::greater<int>> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
@@ -58,11 +63,13 @@ int main(int argc, char** argv)
     layout.call(GA);
 
     adjustCoordinatesToGrid(G, GA, occupiedPositions, static_cast<double>(width), static_cast<double>(height));
+    std::map<ogdf::node, bool> nodeOnEdge;
+
 
     auto end_preprocess = std::chrono::high_resolution_clock::now();
 
 
-    simulated_annealing(G,GA,nodesId,5000, width, height, 2, 1.0, 0.99);
+    simulated_annealing(G,GA,nodesId,10000, width, height, cooling_technique, 1.0, 0.99);
     
     auto end_annealing = std::chrono::high_resolution_clock::now();
 

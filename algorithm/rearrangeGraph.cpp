@@ -75,10 +75,11 @@ void EmplaceWithinLookup(ogdf::Graph &G, ogdf::GraphAttributes &GA,
         for (const auto& pos : candidates) {
             if (populatedPositions.find(pos) == populatedPositions.end() && 
                     PositionOnGrid(pos, gridWidth, gridHeight)) {
-
                 GA.x(u) = static_cast<double>(pos.first);
                 GA.y(u) = static_cast<double>(pos.second);
+
                 populatedPositions.insert(std::pair<int, int>{pos});
+
                 return;
             }
         }
@@ -102,21 +103,35 @@ void resolveNodeOnEdge(ogdf::Graph &G, ogdf::GraphAttributes &GA,
     int y = (int)GA.y(u);
 
     auto rng = std::default_random_engine {};     
-    int lookup_radius = 1;
+    int lookup_radius = 0;
 
     bool stillOnGrid = OnGridWithRadius(std::pair<int, int>{x, y}, lookup_radius, gridWidth, gridHeight);
     while (stillOnGrid) {
        
         int xDown = x - lookup_radius;
         int yDown = y - lookup_radius;
-        
+        std::pair<int, int> old_coor;
+        for (auto & old_pos : populatedPositions) {
+            if (old_pos.first == (int)GA.x(u) && (int)old_pos.second == (int)GA.y(u)) {
+                old_coor = old_pos;
+                break;
+            }
+        }
        std::vector<std::pair<int, int>> candidates = generateFramePositions(xDown, yDown, lookup_radius);
        std::shuffle(candidates.begin(), candidates.end(), rng);
         for (const auto& pos : candidates) {
-            bool posOnEdge = check_pos_on_anyEdge(G, GA, pos);
+            double old_x = GA.x(u);
+            double old_y = GA.y(u);
+            GA.x(u) = pos.first;
+            GA.y(u) = pos.second;
+            bool posOnEdge = check_node_on_anyEdge(G, GA, u);
+            bool incidentEdgesOnNode = nodeEdges_intersect_anyNode(G, GA, u);
+            GA.x(u) = old_x;
+            GA.y(u) = old_y;
+ 
             if (populatedPositions.find(pos) == populatedPositions.end() && 
-                    PositionOnGrid(pos, gridWidth, gridHeight) && !posOnEdge) {
-
+                    PositionOnGrid(pos, gridWidth, gridHeight) && !posOnEdge && !incidentEdgesOnNode) {
+                populatedPositions.erase(old_coor);
                 GA.x(u) = static_cast<double>(pos.first);
                 GA.y(u) = static_cast<double>(pos.second);
                 populatedPositions.insert(std::pair<int, int>{pos});
@@ -149,13 +164,16 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
         EmplaceWithinLookup(G, GA, u, populatedPositions, gridWidth, gridHeight);
 
     }
-    std::queue<ogdf::node> nodesOnEdges;
+    //std::queue<ogdf::node> nodesOnEdges;
+    //std::vector<ogdf::node> nodesOnEdges;
     for (const auto  &u : G.nodes) {
         if (check_node_on_anyEdge(G, GA, u)) {
-            nodesOnEdges.push(u);
+            resolveNodeOnEdge(G, GA, populatedPositions, u, gridWidth, gridHeight);
+            //nodesOnEdges.push_back(u);
         }
     }
-    while (!nodesOnEdges.empty()) {
+
+    /*while (!nodesOnEdges.empty()) {
         resolveNodeOnEdge(G, GA, populatedPositions, 
                 nodesOnEdges.front(), gridWidth, gridHeight);
         nodesOnEdges.pop();
@@ -164,7 +182,7 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
                 nodesOnEdges.push(u);
             }
         }
-    }
+    }*/
 
 
 
