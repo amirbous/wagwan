@@ -157,7 +157,6 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             }
         }
 
-        //G.newEdge(source,target);
         iteration_count ++;
     }
     std::cout << "MAXIMUM NUMBER OF ITERATIONS ACHIEVED" << std::endl;

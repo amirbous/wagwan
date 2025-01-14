@@ -40,7 +40,7 @@ Graph |  initial | Linear | Logarithmic | Exponential
 ------------- | ----------------| ------------ | ------------- | -----------
 Graph1   | x | 4 | 3 | x 
 Graph2   | x | 0 | 6 | 12
-Graph3   | x | 8 | 8 | 5 
+Graph3   | 9 | 3 | 1 | 3 
 Graph4   | 18 | 3 | 4 | 4
 Graph5   | 33 | 12 | 4 | 3
 Graph6   | 22 | 5 | 6 | 5 

@@ -1,6 +1,9 @@
 #include <ogdf/basic/GraphAttributes.h>
 #include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/energybased/FMMMLayout.h>
+#include <ogdf/graphalg/PlanarSeparatorModule.h>
+#include <ogdf/planarity/PlanarizationLayout.h>
+#include <ogdf/planarity/BoyerMyrvold.h>
 
 #include "../include/IO.hpp"
 #include "../include/algorithm/linesweeper.hpp"
@@ -40,10 +43,10 @@ int main(int argc, char** argv)
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
  
- 
+
 
     auto start_intersect_before = std::chrono::high_resolution_clock::now();
-    std::map<int, ogdf::edge, std::greater<int>> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
+        std::map<int, ogdf::edge, std::greater<int>> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
     auto end_intersect_before = std::chrono::high_resolution_clock::now();
 
     int max_intersect_before = intersectionCountBefore.begin()->first;
@@ -56,20 +59,41 @@ int main(int argc, char** argv)
 
     auto start_preprocess = std::chrono::high_resolution_clock::now();
 
-    FMMMLayout layout;
-    layout.useHighLevelOptions(true);
-    layout.unitEdgeLength(width / 50.0); 
-    layout.qualityVersusSpeed(FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
-    layout.call(GA);
 
+    // Most recent update: Preprocessing
+    // check for planar embedding and stack it
+    BoyerMyrvold bm;
+    bool GIsPlanar = bm.isPlanar(G);
+    if (GIsPlanar) {
+
+        PlanarizationLayout pl;
+        pl.call(GA);
+    }
+    else {
+        // energy minimization only if G is not planar
+        FMMMLayout layout;
+        layout.useHighLevelOptions(true);
+        layout.unitEdgeLength(width / 50.0); 
+        layout.qualityVersusSpeed(FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
+        layout.call(GA);
+    }
+
+
+
+    // always needed to refit to grid
     adjustCoordinatesToGrid(G, GA, occupiedPositions, static_cast<double>(width), static_cast<double>(height));
-    std::map<ogdf::node, bool> nodeOnEdge;
+
 
 
     auto end_preprocess = std::chrono::high_resolution_clock::now();
 
+    std:: cout << fileName << " is planar = " << GIsPlanar << std::endl;
+    size_t nIterations = GIsPlanar ? 200 : 5000; // A number of iterations is still needed maybe adjust coordinates to grid created some intersections 
+    int repeats =  GIsPlanar ? 1 : 3;
 
-    simulated_annealing(G,GA,nodesId,10000, width, height, cooling_technique, 1.0, 0.99);
+    for (auto i = 0; i < repeats; i++) {
+        simulated_annealing(G,GA,nodesId,nIterations, width, height, cooling_technique, 1.0, 0.99);
+    }
     
     auto end_annealing = std::chrono::high_resolution_clock::now();
 
