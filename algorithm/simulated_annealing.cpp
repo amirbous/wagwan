@@ -65,8 +65,8 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
     int highestCount = INT_MAX;
     std::map<int, ogdf::edge,  std::greater<int>> intersection_edges{},
                                                 local_intersection_edges{};
-    ogdf::node source{},
-                target{};
+    std::vector<ogdf::node> source{}, target{};
+    std::vector<ogdf::edge> worst_edges;
     int source_x = 0, source_y = 0;
     double temperature;
     while (iteration_count < max_iterations && highestCount > 0) {
@@ -91,21 +91,20 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         // getting a random edge from the 4 first edges
         auto  lookupEdge_it = intersection_edges.begin();
 
+        for(int n_sources=0; n_sources < 10; n_sources++)
+        {
+            if (lookupEdge_it != intersection_edges.end()) {
+                ogdf::edge worst_edge = lookupEdge_it++->second;
+                worst_edges.push_back(worst_edge);
+                source.push_back(worst_edge->source());
+                target.push_back(worst_edge->target());
+            }
+        }
 
-        ogdf::edge worst_edge = lookupEdge_it->second;
 
 
-        source = worst_edge->source();
-        target = worst_edge->target();
 
-
-        // Usefull later for evaluating the energy, as only the incident edges will be changed locally,
-        // However global evaluation in outer loop requires the full edge list from the graph
-        std::vector<ogdf::edge> source_incident_edges = getIncidentEdges(G, GA, source);
-        source_x = GA.x(source);
-        source_y = GA.y(source);
-
-        highestCount = calculate_specific_intersections(findIntersections(G,GA), worst_edge);
+        highestCount = calculate_specific_intersections(findIntersections(G,GA), worst_edges[0]);
 
         // start simulated annealing
         energy = highestCount;
@@ -114,46 +113,81 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         while(new_sources_vector.size() < 20)
             new_sources_vector.push_back(generate_new_source(gen, temperature, source_x, source_y, width, height));
 
-        bool check = false;
-        for(auto new_source: new_sources_vector)
+        std::vector<std::pair<int,int>> previous_sources(10);
+        std::vector<std::pair<int,int>> new_sources(10);
+        for(int edge_index=0; edge_index < source.size(); edge_index++)
         {
-            if (check)
-                break;
-            GA.x(source) = new_source.first;
-            GA.y(source) = new_source.second;
-            if (!check_node[new_source] && !check_node_on_anyEdge(G,GA,source)
-                    && !edgeIntersects_anyNode(G, GA, worst_edge) && !nodeEdges_intersect_anyNode(G, GA, source))
+            bool check = false;
+
+            // Usefull later for evaluating the energy, as only the incident edges will be changed locally,
+            // However global evaluation in outer loop requires the full edge list from the graph
+            std::vector<ogdf::edge> source_incident_edges = getIncidentEdges(G, GA, source[edge_index]);
+            source_x = GA.x(source[edge_index]);
+            source_y = GA.y(source[edge_index]);
+
+            for(auto new_source: new_sources_vector)
             {
-
-                // to reduce time for eavluating edge intersections, instead of evaluating whole edge, just the edge with the worst 
-                
-                std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA, source_incident_edges);
-
-                energy_new = calculate_singular_intersections(intersections).begin()->first;
-
-
-
-                std::uniform_real_distribution<> distribution2(0.0, 1.0);
-                double random_probability = distribution2(gen);
-
-                if (probability(energy, energy_new, temperature) >= random_probability)
+                if (check)
+                    break;
+                GA.x(source[edge_index]) = new_source.first;
+                GA.y(source[edge_index]) = new_source.second;
+                if (!check_node[new_source] && !check_node_on_anyEdge(G,GA,source[edge_index])
+                        && !edgeIntersects_anyNode(G, GA, worst_edges[edge_index]) && !nodeEdges_intersect_anyNode(G, GA, source[edge_index]))
                 {
-                    // we add the edge between the new source node and the target node
-                    check_node[{source_x, source_y}] = false;
-                    check_node[new_source] = true;
-                    check = true;
+
+                    // to reduce time for eavluating edge intersections, instead of evaluating whole edge, just the edge with the worst
+
+                    std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA, source_incident_edges);
+
+                    energy_new = calculate_singular_intersections(intersections).begin()->first;
+
+
+
+                    std::uniform_real_distribution<> distribution2(0.0, 1.0);
+                    double random_probability = distribution2(gen);
+
+                    if (probability(energy, energy_new, temperature) >= random_probability)
+                    {
+                        // we add the edge between the new source node and the target node
+                        check_node[{source_x, source_y}] = false;
+                        previous_sources[edge_index] = {source_x, source_y};
+                        check_node[new_source] = true;
+                        new_sources[edge_index] = new_source;
+                        check = true;
+                    }
+                    else
+                    {
+                        // re-create the edge if the new configuration is not accepted
+                        GA.x(source[edge_index]) = source_x;
+                        GA.y(source[edge_index]) = source_y;
+                    }
                 }
                 else
                 {
-                    // re-create the edge if the new configuration is not accepted
-                    GA.x(source) = source_x;
-                    GA.y(source) = source_y;
+                    GA.x(source[edge_index]) = source_x;
+                    GA.y(source[edge_index]) = source_y;
                 }
             }
-            else
+        }
+
+        std::vector<std::pair<ogdf::edge, ogdf::edge>> intersections = findIntersections(G, GA, worst_edges);
+
+        energy_new = calculate_singular_intersections(intersections).begin()->first;
+
+        std::uniform_real_distribution<> distribution2(0.0, 1.0);
+        double random_probability = distribution2(gen);
+        if (probability(energy, energy_new, temperature) >= random_probability)
+        {
+            std::cout << "MOVING 10 NODES IN ONE STEP" << std::endl;
+        }
+        else
+        {
+            for(int edge_index=0;edge_index<source.size();edge_index++)
             {
-                GA.x(source) = source_x;
-                GA.y(source) = source_y;
+                check_node[new_sources[edge_index]] = false;
+                check_node[previous_sources[edge_index]] = true;
+                GA.x(source[edge_index]) = previous_sources[edge_index].first;
+                GA.y(source[edge_index]) = previous_sources[edge_index].second;
             }
         }
 
