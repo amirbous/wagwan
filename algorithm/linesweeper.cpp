@@ -89,7 +89,6 @@ std::vector<std::pair<ogdf::edge, ogdf::edge>> findIntersections(const ogdf::Gra
     return intersections;
 }
 
-
 std::map<int, ogdf::edge, std::greater<int>> calculate_singular_intersections(const std::vector<std::pair<ogdf::edge,ogdf::edge>> &edges)
 {
     std::map<ogdf::edge, int> edge_to_intersect;

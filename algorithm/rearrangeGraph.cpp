@@ -77,8 +77,8 @@ void EmplaceWithinLookup(ogdf::Graph &G, ogdf::GraphAttributes &GA,
         for (const auto& pos : candidates) {
             if (populatedPositions.find(pos) == populatedPositions.end() && 
                     PositionOnGrid(pos, gridWidth, gridHeight)) {
-                GA.x(u) = static_cast<double>(pos.first);
-                GA.y(u) = static_cast<double>(pos.second);
+                GA.x(u) = (pos.first);
+                GA.y(u) = (pos.second);
 
                 populatedPositions.insert(std::pair<int, int>{pos});
 
@@ -139,8 +139,8 @@ void resolveNodeOnEdge(ogdf::Graph &G, ogdf::GraphAttributes &GA,
             if (populatedPositions.find(pos) == populatedPositions.end() && 
                     PositionOnGrid(pos, gridWidth, gridHeight) && !posOnEdge && !incidentEdgesOnNode) {
                 populatedPositions.erase({old_x, old_y});
-                GA.x(u) = static_cast<double>(pos.first);
-                GA.y(u) = static_cast<double>(pos.second);
+                GA.x(u) = (pos.first);
+                GA.y(u) = (pos.second);
                 populatedPositions.insert({pos.first, pos.second});
 
                 return;
@@ -158,15 +158,28 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
                             std::set<std::pair<int, int>>& populatedPositions, 
                             double gridWidth, double gridHeight) {
 
-                            
-    centerInGrid(G, GA, gridWidth, gridHeight);
+     
+    
+    std::vector<ogdf::node> allNodes;
+    for (const auto & n : G.nodes) {
+        allNodes.push_back(n);
+    }
+    int max_x = GA.x(*std::max_element(allNodes.begin(), allNodes.end(), [GA](ogdf::node n1, ogdf::node n2){return GA.x(n1) < GA.y(n2);}));
+    int max_y = GA.y(*std::max_element(allNodes.begin(), allNodes.end(), [GA](ogdf::node n1, ogdf::node n2){return GA.y(n1) < GA.y(n2);}));
+
+
+    int min_x = GA.x(*std::min_element(allNodes.begin(), allNodes.end(), [GA](ogdf::node n1, ogdf::node n2){return GA.x(n1) < GA.x(n2);}));
+    int min_y = GA.y(*std::min_element(allNodes.begin(), allNodes.end(), [GA](ogdf::node n1, ogdf::node n2){return GA.y(n1) < GA.y(n2);}));
+
+    int oldRangeX = max_x - min_x;
+    int oldRangeY = max_y - min_y;
 
     for (ogdf::node u : G.nodes) {
-        double x = GA.x(u);
-        double y = GA.y(u);
+        double newX = (GA.x(u) - min_x)*gridWidth / (oldRangeX);
+        double newY = (GA.y(u) - min_y)*gridHeight / (oldRangeY);
 
-        GA.x(u) = std::min(x, gridWidth);
-        GA.y(u) = std::min(y, gridHeight);
+        GA.x(u) = newX;
+        GA.y(u) = newY;
 
         EmplaceWithinLookup(G, GA, u, populatedPositions, gridWidth, gridHeight);
 
@@ -176,7 +189,6 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
             resolveNodeOnEdge(G, GA, populatedPositions, u, gridWidth, gridHeight);
         }
     }
-
 
 }
 
