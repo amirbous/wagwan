@@ -8,14 +8,14 @@
 
 
 void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
-    std::set<std::pair<int, int>>& populatedPositions, double gridWidth, double gridHeight);
+    std::map<std::pair<int, int>, bool>& populatedPositions, double gridWidth, double gridHeight);
 void rearrangeToIntGraph(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
-    std::set<std::pair<int, int>> occupiedPositions, double gridWidth, double gridHeight); 
+    std::map<std::pair<int, int>, bool>& occupiedPositions, double gridWidth, double gridHeight); 
 void centerInGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
     double gridWidth, double gridHeight);
 
 void resolveNodeOnEdge(ogdf::Graph &G, ogdf::GraphAttributes &GA,
-                        std::set<std::pair<int, int>>& populatedPositions, ogdf::node u,
+                        std::map<std::pair<int, int>, bool>& populatedPositions, ogdf::node u,
                         double gridWidth, double gridHeight);
 
 #endif

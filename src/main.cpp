@@ -4,6 +4,8 @@
 #include <ogdf/graphalg/PlanarSeparatorModule.h>
 #include <ogdf/planarity/PlanarizationLayout.h>
 #include <ogdf/planarity/BoyerMyrvold.h>
+#include <ogdf/basic/LayoutStatistics.h>
+#include <ogdf/fileformats/GraphIO.h>
 
 #include "../include/IO.hpp"
 #include "../include/algorithm/linesweeper.hpp"
@@ -11,26 +13,19 @@
 #include "../include/algorithm/simulated_annealing.hpp"
 #include "../include/intersectGraph.hpp"
 
-#include "../include/RTree.h"
-#include "../include/structs.hpp"
-
 #include <string>
 #include <vector>
 #include <iostream>
 #include <map>
 #include <set>
 
-#include <functional>
-#include <algorithm>
-
 using namespace ogdf;
-
 
 
 int main(int argc, char** argv)
 {
 
-    if (argc < 3) {
+    if (argc < 4) {
         std::cout << "requires 2 arguments: \n input file \n output file" << std::endl;
         exit(-1);
     }
@@ -49,73 +44,78 @@ int main(int argc, char** argv)
 
     initializeGraphFromJson(G, GA, fileName, nodesId, width, height);
 
+ 
+    /*ArrayBuffer<int> crossings = LayoutStatistics::numberOfCrossings(GA);
+    int maxCrossings = std::numeric_limits<int>::min();
+    for (int i = 0; i < G.edges.size(); i++) {
+        if (crossings[i] > maxCrossings) {
+            maxCrossings = crossings[i];
+        }
+    }*/
 
-    // evaluate intersection correctly before using linesweeper
+    //std::cout << maxCrossings << std::endl;
+
     auto start_intersect_before = std::chrono::high_resolution_clock::now();
-    auto inter = calculate_singular_intersections(findIntersections(G, GA));
+        std::map<int, ogdf::edge, std::greater<int>> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
     auto end_intersect_before = std::chrono::high_resolution_clock::now();
 
-    
+    int max_intersect_before = intersectionCountBefore.begin()->first;
 
     std::cout <<fileName << std::endl;
-    std::cout << "before: " << inter.begin()->first <<std::endl;
+    std::cout << "before: " << max_intersect_before <<std::endl;
 
 
-    std::set<std::pair<int, int>> occupiedPositions;
+    std::map<std::pair<int, int>, bool> occupiedPositions;
 
-    std::cout << "Linesweeper: " << inter.begin()->first << std::endl;
+    // Fill the map with all integer coordinates and initialize values to false
+    for (int x = 0; x <= width; ++x) {
+        for (int y = 0; y <= height; ++y) {
+            occupiedPositions[{x, y}] = false;
+        }
+    }
+
+
     auto start_preprocess = std::chrono::high_resolution_clock::now();
-    std::cout << "Linesweep " <<  std::chrono::duration_cast<std::chrono::microseconds>(end_intersect_before - start_intersect_before).count() << "µs" <<std::endl;
-    std::cout << "Tree " <<  std::chrono::duration_cast<std::chrono::milliseconds>(start_preprocess - end_intersect_before).count() << "µs" << std::endl;
-    
-
 
 
     // Most recent update: Preprocessing
     // check for planar embedding and stack it
-    BoyerMyrvold bm;
+    /*BoyerMyrvold bm;
     bool GIsPlanar = bm.isPlanar(G);
-    std::cout << GIsPlanar << std::endl;
     if (GIsPlanar) {
 
         PlanarizationLayout pl;
         pl.call(GA);
     }
-    else {
+    else {*/
         // energy minimization only if G is not planar
         FMMMLayout layout;
         layout.useHighLevelOptions(true);
-        layout.unitEdgeLength(width / 20.0); 
+        layout.unitEdgeLength(width / 100.0); 
         layout.qualityVersusSpeed(FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
         layout.call(GA);
-    }
+   // }
+        GraphIO::drawSVG(GA, "graph.svg");
+
+
 
     // always needed to refit to grid
-    adjustCoordinatesToGrid(G, GA, occupiedPositions, width, height);
+    adjustCoordinatesToGrid(G, GA, occupiedPositions, static_cast<double>(width), static_cast<double>(height));
+    std::map<int, ogdf::edge, std::greater<int>> afterPre = calculate_singular_intersections(findIntersections(G,GA));
+    std::cout << "After Preprocessing" << afterPre.begin()->first << std::endl;
 
+/*
     auto end_preprocess = std::chrono::high_resolution_clock::now();
 
-
-    auto Intersection_edgesafterPre = calculate_singular_intersections(findIntersections(G, GA));
-    int max_intersect_beforeafterPre = Intersection_edgesafterPre.begin()->first;
-    std::cout << "after preprocessing: " << max_intersect_beforeafterPre << std::endl;
-    //Constructin RTree for simulated annealing
-
-    auto newTree = createTree(G, GA);
-    auto rtree = newTree.first;
-    auto edgeRectangle = newTree.second;
-
-    auto intersections = check_edge_intersections(G, GA, rtree);
-    std::cout << "Tree: " << intersections.begin()->first << std::endl;
-
-    
-    size_t nIterations = GIsPlanar ? 300 : 300; // A number of iterations is still needed maybe adjust coordinates to grid created some intersections 
-    int repeats =  GIsPlanar ? 1 : 1;
+    //std:: cout << fileName << " is planar = " << GIsPlanar << std::endl;
+//    size_t nIterations = GIsPlanar ? 200 : 5000; // A number of iterations is still needed maybe adjust coordinates to grid created some intersections 
+    int repeats =  5;
+	size_t nIterations = 1000;
 
     for (auto i = 0; i < repeats; i++) {
-        simulated_annealing(G,GA,nodesId, nIterations, rtree, edgeRectangle, width, height, cooling_technique, 1.0, 0.99);
+        simulated_annealing(G,GA,nodesId,200, width, height, cooling_technique, 1.0, 0.99);
     }
-
+    
     auto end_annealing = std::chrono::high_resolution_clock::now();
 
 
@@ -132,12 +132,8 @@ int main(int argc, char** argv)
     std::cout << "Time to annealing: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_annealing - end_preprocess).count() << "µs" << std::endl;
     std::cout << "Time to evaluate intersections after: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_intersect_after - end_annealing).count() << "µs" << std::endl;
 
-
+*/
     writeGraphToJson(G, GA, outFile, nodesId, width, height);
-    
-
-
 
 	return 0;
-
 }

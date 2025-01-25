@@ -17,10 +17,4 @@ bool edgeIntersects_anyNode(const ogdf::Graph &G, const ogdf::GraphAttributes &G
 bool positionOnSegment(const ogdf::GraphAttributes& GA, ogdf::node a, ogdf::node b, const std::pair<int, int>& pos);
 std::vector<ogdf::edge> getIncidentEdges(const ogdf::Graph &G, const ogdf::GraphAttributes &GA, const ogdf::node &u);
 bool nodeEdges_intersect_anyNode(const ogdf::Graph &G, const ogdf::GraphAttributes &GA, const ogdf::node & node);
-
-
-int orientation(const double* p1, const double* p2, const double* p3);
-bool nodeOnSegment(const double* p, const double* q, const double* r);
-bool edgesIntersect(const double rec1_min[2], const double rec1_max[2], const double rec2_min[2], const double rec2_max[2]);
-void edgeCounter(const double rec1_min[2], const double rec1_max[2], const double rec2_min[2], const double rec2_max[2], int * counter);
 #endif
