@@ -28,7 +28,7 @@ std::map<int, ogdf::edge, std::greater<int>> check_edge_intersections(const ogdf
     std::map<int, ogdf::edge, std::greater<int>> intersections; // Map to store intersections and corresponding edges
 
     // Iterate over the edges of the graph
-    for (const auto& e : G.edges) {
+    /*for (const auto& e : G.edges) {
         auto source = e->source();
         auto target = e->target();
 
@@ -55,9 +55,7 @@ std::map<int, ogdf::edge, std::greater<int>> check_edge_intersections(const ogdf
             double recother_max[2] = {
                 rect->xmax, rect->ymax
             };
-                if (edgesIntersect(rec_min, rec_max, recother_min, recother_max))
-                intersection_count++; // Increment intersection count
-            }
+            intersection_count++; // Increment intersection count
             return true; // Continue searching for more intersections
         };
 
@@ -68,7 +66,10 @@ std::map<int, ogdf::edge, std::greater<int>> check_edge_intersections(const ogdf
         intersections[intersection_count] = e;
     }
 
-    return intersections; // Return the map of intersections
+    return intersections; // Return the map of intersections*/
+
+    return intersections;
+
 }
 
 std::pair<RTree<Rectangle*, double, 2>, std::map<ogdf::edge, Rectangle*>> createTree(const ogdf::Graph &G, const ogdf::GraphAttributes &GA) {

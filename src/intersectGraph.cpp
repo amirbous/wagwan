@@ -1,6 +1,8 @@
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/GraphAttributes.h>
 
+#include <ogdf/basic/ArrayBuffer.h>
+#include <ogdf/basic/LayoutStatistics.h>
 #include "../include/intersectGraph.hpp"
 
 
@@ -17,6 +19,37 @@ std::vector<ogdf::edge> getIncidentEdges(const ogdf::Graph &G, const ogdf::Graph
     return incident_edges;
 }
 
+
+std::pair<int, ogdf::edge> getODGFIntersect(const ogdf::Graph &G, const ogdf::GraphAttributes &GA) {
+    ogdf::ArrayBuffer<int> crossings = ogdf::LayoutStatistics::numberOfCrossings(GA);
+    int maxCrossings = std::numeric_limits<int>::min();
+    ogdf::edge maxEdge = nullptr;
+
+    int edgeIndex = 0;
+    for (ogdf::edge e : G.edges) {
+        if (crossings[e->index()] > maxCrossings) {
+            maxCrossings = crossings[e->index()];
+            maxEdge = e;
+        }
+        edgeIndex++;
+    }
+    return {maxCrossings, maxEdge};
+}
+
+int getODGFMax(const ogdf::Graph &G, const ogdf::GraphAttributes &GA) {
+    ogdf::ArrayBuffer<int> crossings = ogdf::LayoutStatistics::numberOfCrossings(GA);
+    int maxCrossings = std::numeric_limits<int>::min();
+    ogdf::edge maxEdge = nullptr;
+
+    int edgeIndex = 0;
+    for (auto i = 0; i < crossings.size(); i++) {
+        if (crossings[i] > maxCrossings) {
+            maxCrossings = crossings[i];
+
+        }
+    }
+    return maxCrossings;
+}
 // Function to check for shared nodes (edges can't intersect if they share a node)
 bool isSharedNode(ogdf::node n1, ogdf::node n2, ogdf::node n3, ogdf::node n4) {
     return (n1 == n3 || n1 == n4 || n2 == n3 || n2 == n4);

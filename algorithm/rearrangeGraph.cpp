@@ -158,7 +158,7 @@ void adjustCoordinatesToGrid(ogdf::Graph &G, ogdf::GraphAttributes &GA,
                             std::map<std::pair<int, int>, bool>& populatedPositions, 
                             double gridWidth, double gridHeight) {
 
-	//std::cout << "Adjusting coordinates" << std::endl;                            
+	std::cout << "Adjusting coordinates" << std::endl;                            
     //centerInGrid(G, GA, gridWidth, gridHeight);
 	std::vector<ogdf::node> allNodes;
     for (const auto & n : G.nodes) {

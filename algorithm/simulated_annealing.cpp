@@ -9,6 +9,24 @@
 #include "../include/algorithm/simulated_annealing.hpp"
 #include "../include/algorithm/linesweeper.hpp"
 #include "../include/intersectGraph.hpp"
+#include "../include/RTree.h"
+#include "../include/structs.hpp"
+
+#include <set>
+#include <limits.h>
+
+
+#include <set>
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/graph_generators.h>
+#include <ogdf/fileformats/GraphIO.h>
+#include <ogdf/basic/GraphAttributes.h>
+
+#include "../include/algorithm/simulated_annealing.hpp"
+#include "../include/algorithm/linesweeper.hpp"
+#include "../include/intersectGraph.hpp"
+
+#include "../include/IO.hpp"
 
 #include <set>
 #include <limits.h>
@@ -23,12 +41,6 @@ std::pair<int,int> generate_new_source(std::mt19937 &gen, double &temperature, i
 
         double angle = angle_dist(gen);
         int length = length_dist(gen);
-        /*if (iteration_count % 10 == 0) {
-            std::cout << iteration_count << "  ITERATIONS HAVE PASSED!" <<
-                                            ", LENGTH= " << length <<
-                                            ", LOOKUP DISTANCE= " << temperature <<
-                                            ", ANGLE= " << angle << std::endl;
-        }*/
 
 
         double new_x = source_x + length * std::cos(angle);
@@ -42,9 +54,13 @@ std::pair<int,int> generate_new_source(std::mt19937 &gen, double &temperature, i
     return {x,y};
 }
 
-void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unordered_map<ogdf::node, int> &nodes_id, int max_iterations,
-                            int width, int height, int cooling_technique, double initial_temperature, double cooling_rate)
+void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, 
+                            std::unordered_map<ogdf::node, int> &nodes_id, int max_iterations,
+                            int width, int height, int cooling_technique, double initial_temperature, 
+                            double cooling_rate, int bestCount, const std::string &filePath)
 {
+
+
     const static unsigned int seed = 42;
     std::mt19937 gen(seed);
 
@@ -70,6 +86,9 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
     int source_x = 0, source_y = 0;
     double temperature;
     while (iteration_count < max_iterations && highestCount > 0) {
+        
+
+
         if (iteration_count % 200 == 0) std::cout << "In iteration number= " << iteration_count << std::endl;
         if (cooling_technique == 0)
             temperature = 1.0 - static_cast<double>(iteration_count + 1) / max_iterations;
@@ -105,10 +124,18 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
         source_x = GA.x(source);
         source_y = GA.y(source);
 
-        highestCount = calculate_specific_intersections(findIntersections(G,GA), worst_edge);
+        highestCount = intersection_edges.begin()->first;
 
+        if (highestCount < bestCount) {
+            writeGraphToJson(G, GA, filePath, nodes_id, width, height);
+            bestCount = highestCount;
+        }
+
+
+        std::cout << "Iteration = " << iteration_count << " Count = " << highestCount << std::endl;
         // start simulated annealing
         energy = highestCount;
+
 
         std::vector<std::pair<int, int>> new_sources_vector;
         while(new_sources_vector.size() < 20)
@@ -157,6 +184,7 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
             }
         }
 
+        //G.newEdge(source,target);
         iteration_count ++;
     }
     std::cout << "MAXIMUM NUMBER OF ITERATIONS ACHIEVED" << std::endl;
@@ -212,3 +240,4 @@ void simulated_annealing(ogdf::Graph &G, ogdf::GraphAttributes &GA, std::unorder
                 }
             }
         }*/
+
