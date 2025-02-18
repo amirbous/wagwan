@@ -135,48 +135,47 @@ bool check_pos_on_anyEdge(const ogdf::Graph &G, const ogdf::GraphAttributes &GA,
     return check;
 }
 
-
-// Main Function for intersection between two edges
 bool edgesIntersect(const ogdf::GraphAttributes& GA, ogdf::edge& e1, ogdf::edge& e2) {
-    // Get the nodes of the edges
+    // Retrieve the nodes for the edges
     ogdf::node a = e1->source();
     ogdf::node b = e1->target();
     ogdf::node c = e2->source();
     ogdf::node d = e2->target();
 
-    // If any of the edges share a node, return false immediately
-    if (isSharedNode(a, b, c, d)) return false;
+    // If edges share any node, they cannot intersect
+    if (a == c || a == d || b == c || b == d) return false;
 
-    // Calculate orientations for the pairs of points
+    // Orientation calculations
+    auto orientation = [](const ogdf::GraphAttributes& GA, ogdf::node p, ogdf::node q, ogdf::node r) {
+        float val = (GA.y(q) - GA.y(p)) * (GA.x(r) - GA.x(q)) - (GA.x(q) - GA.x(p)) * (GA.y(r) - GA.y(q));
+        if (val == 0) return 0; // Collinear
+        return (val > 0) ? 1 : 2; // Clockwise or Counterclockwise
+    };
+
+    // Check if a point lies on a segment
+    auto nodeOnSegment = [](const ogdf::GraphAttributes& GA, ogdf::node p, ogdf::node q, ogdf::node r) {
+        return (GA.x(r) <= std::max(GA.x(p), GA.x(q)) && GA.x(r) >= std::min(GA.x(p), GA.x(q)) &&
+                GA.y(r) <= std::max(GA.y(p), GA.y(q)) && GA.y(r) >= std::min(GA.y(p), GA.y(q)));
+    };
+
     int o1 = orientation(GA, a, b, c);
     int o2 = orientation(GA, a, b, d);
     int o3 = orientation(GA, c, d, a);
     int o4 = orientation(GA, c, d, b);
 
-    // If orientations are different, the edges intersect
+    // General case: edges intersect if orientations differ
     if (o1 != o2 && o3 != o4) return true;
 
-    // Handle special cases where points are collinear but lie on the segment
-    // Perform this check only if the edges are collinear
-    if (o1 == 0) {
-        if (nodeOnSegment(GA, a, b, c) || nodeOnSegment(GA, a, b, d)) return true;
-    }
-    if (o2 == 0) {
-        if (nodeOnSegment(GA, a, b, d)) return true;
-    }
-    if (o3 == 0) {
-        if (nodeOnSegment(GA, c, d, a)) return true;
-    }
-    if (o4 == 0) {
-        if (nodeOnSegment(GA, c, d, b)) return true;
-    }
+    // Special cases: check for collinear points lying on segments
+    if (o1 == 0 && nodeOnSegment(GA, a, b, c)) return true;
+    if (o2 == 0 && nodeOnSegment(GA, a, b, d)) return true;
+    if (o3 == 0 && nodeOnSegment(GA, c, d, a)) return true;
+    if (o4 == 0 && nodeOnSegment(GA, c, d, b)) return true;
 
-    // Additional check for collinear segments that just touch at one endpoint
-    // Ensure segments are touching at one endpoint or overlap slightly
+    // Collinear overlapping check
     if (o1 == 0 && o2 == 0 && o3 == 0 && o4 == 0) {
-        // Ensure segments are touching at one endpoint
-        if ((nodeOnSegment(GA, a, b, c) && nodeOnSegment(GA, a, b, d)) || 
-            (nodeOnSegment(GA, c, d, a) && nodeOnSegment(GA, c, d, b))) {
+        if ((nodeOnSegment(GA, a, b, c) || nodeOnSegment(GA, a, b, d)) ||
+            (nodeOnSegment(GA, c, d, a) || nodeOnSegment(GA, c, d, b))) {
             return true;
         }
     }

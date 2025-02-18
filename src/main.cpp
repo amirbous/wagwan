@@ -19,6 +19,8 @@
 #include <map>
 #include <set>
 
+#include <math.h>
+
 #include <iostream>
 
 
@@ -27,9 +29,10 @@ int main(int argc, char** argv)
 {
 
     if (argc < 4) {
-        std::cout << "requires 2 arguments: \n input file \n output file" << std::endl;
+        std::cout << "requires 3 arguments: \n input file \n output file \n cooling_technique(0, 1 or 2)" << std::endl;
         exit(-1);
     }
+    
     const std::string fileName = argv[1];
     const std::string outFile = argv[2];
     const int cooling_technique = std::stoi(argv[3]);
@@ -49,18 +52,21 @@ int main(int argc, char** argv)
 
     auto start_intersect_before = std::chrono::high_resolution_clock::now();
     std::map<int, ogdf::edge, std::greater<int>> intersectionCountBefore = calculate_singular_intersections(findIntersections(G,GA));
-   
     auto end_intersect_before = std::chrono::high_resolution_clock::now();
 
     int max_intersect_before = intersectionCountBefore.begin()->first;
     intersectionCountBefore.clear(); 
+
+
+    std::cout << max_intersect_before << std::endl;
+    std::cout << "Time to evaluate intersections before: " <<  std::chrono::duration_cast<std::chrono::microseconds>(end_intersect_before - start_intersect_before).count() << "µs" <<std::endl;
+    
     std::cout <<fileName << std::endl;
     std::cout << "before: " << max_intersect_before <<std::endl;
 
 
     std::map<std::pair<int, int>, bool> occupiedPositions;
 
-    // Fill the map with all integer coordinates and initialize values to false
 
     for (int x = 0; x <= width; ++x) {
         for (int y = 0; y <= height; ++y) {
@@ -72,23 +78,9 @@ int main(int argc, char** argv)
 
 
 
-
-    ogdf::ArrayBuffer<double> lengths = LayoutStatistics::edgeLengths(GA);
-    double averageLength = 0;
-    for (double l : lengths) {
-        averageLength += l;
-    }
-    averageLength /= lengths.size(); 
-
-
-
-    BoyerMyrvold bm;
-    bool GIsPlanar = bm.isPlanar(G);
-    std::cout << "GIsPlanar = " << GIsPlanar << std::endl;
-
     FMMMLayout layout;
     layout.useHighLevelOptions(true);
-    layout.unitEdgeLength(averageLength); 
+    layout.unitEdgeLength(sqrt(pow(width, 2) + pow(height, 2)) / 20); 
     layout.qualityVersusSpeed(FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
     layout.call(GA);
 
@@ -98,22 +90,13 @@ int main(int argc, char** argv)
     std::cout << "After Preprocessing" << afterPre.begin()->first << std::endl;
 
 
-
-
-    // always needed to refit to grid
-
-
-
     auto end_preprocess = std::chrono::high_resolution_clock::now();
-
-    //std:: cout << fileName << " is planar = " << GIsPlanar << std::endl;
-//    size_t nIterations = GIsPlanar ? 200 : 5000; // A number of iterations is still needed maybe adjust coordinates to grid created some intersections 
 
     if (afterPre.begin()->first < max_intersect_before) {
         writeGraphToJson(G, GA, outFile, nodesId, width, height);
     }
         
-    simulated_annealing(G,GA,nodesId, 500, width, height, cooling_technique, 1.0, 0.99, 
+    simulated_annealing(G,GA,nodesId, 5000, width, height, cooling_technique, 1.0, 0.999, 
         std::min(afterPre.begin()->first, max_intersect_before), outFile);
 
     
@@ -134,7 +117,6 @@ int main(int argc, char** argv)
     std::cout << "Time to evaluate intersections after: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(end_intersect_after - end_annealing).count() << "µs" << std::endl;
 
 
-    writeGraphToJson(G, GA, outFile, nodesId, width, height);
 
 	return 0;
 }
